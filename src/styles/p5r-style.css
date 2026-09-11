@@ -2656,9 +2656,22 @@ h1, h2, h3 {
   margin-bottom: 0.35rem;
 }
 
-.mona-badge-icon {
-  font-size: 0.95rem;
-  margin-right: 0.35rem;
+.mona-badge-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.mona-badge-thumb {
+  width: 18px;
+  height: 18px;
+  object-fit: cover;
+  object-position: center 10%;
+  border-radius: 50%;
+  border: 1.5px solid var(--p5-royal-gold);
+  background: #000;
+  display: inline-block;
+  flex-shrink: 0;
 }
 
 .mona-badge-name {
@@ -2743,11 +2756,19 @@ h1, h2, h3 {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #000;
 }
 
-.mona-svg {
+.mona-avatar-img {
   width: 100%;
   height: 100%;
+  object-fit: cover;
+  object-position: center 12%;
+  transform: scale(1.18);
+  pointer-events: none;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
 }
 
 .mona-status-dot {
@@ -3245,7 +3266,7 @@ h1, h2, h3 {
   margin-bottom: 1rem;
   transform: skewX(4deg);
 }
-.grill-tab-btn, .teamwork-tab-btn, .codex-tab-btn {
+.grill-tab-btn, .teamwork-tab-btn, .codex-tab-btn, .advice-tab-btn {
   background: #111;
   border: 1px solid #333;
   color: #aaa;
@@ -3257,16 +3278,16 @@ h1, h2, h3 {
   transition: all 0.18s ease;
   transform: skewX(-6deg);
 }
-.grill-tab-btn > span, .teamwork-tab-btn > span, .codex-tab-btn > span {
+.grill-tab-btn > span, .teamwork-tab-btn > span, .codex-tab-btn > span, .advice-tab-btn > span {
   display: inline-block;
   transform: skewX(6deg);
 }
-.grill-tab-btn:hover, .teamwork-tab-btn:hover, .codex-tab-btn:hover {
+.grill-tab-btn:hover, .teamwork-tab-btn:hover, .codex-tab-btn:hover, .advice-tab-btn:hover {
   background: #222;
   color: #fff;
   border-color: #FFDE00;
 }
-.grill-tab-btn.active, .teamwork-tab-btn.active, .codex-tab-btn.active {
+.grill-tab-btn.active, .teamwork-tab-btn.active, .codex-tab-btn.active, .advice-tab-btn.active {
   background: #E60012;
   color: #fff;
   border-color: #FFDE00;

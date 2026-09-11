@@ -145,6 +145,9 @@ async function run() {
     };
   })()`);
   console.log('[Test 1] State after mouse click on SKILLS:', afterClickState);
+  if (afterClickState.activePane !== 'tab-skills') {
+    throw new Error(`Test 1 failed: expected tab-skills, got ${afterClickState.activePane}`);
+  }
 
   // Test 2: Keyboard ArrowRight
   console.log('\n[Test 2] Simulating Keyboard ArrowRight to HEISTS...');
@@ -163,6 +166,9 @@ async function run() {
     };
   })()`);
   console.log('[Test 2] State after ArrowRight:', afterKeyRight);
+  if (afterKeyRight.activePane !== 'tab-projects') {
+    throw new Error(`Test 2 failed: expected tab-projects, got ${afterKeyRight.activePane}`);
+  }
 
   // Test 3: Keyboard number 4
   console.log('\n[Test 3] Simulating Keyboard "4" to CONFIDANTS...');
@@ -181,6 +187,9 @@ async function run() {
     };
   })()`);
   console.log('[Test 3] State after key 4:', afterKey4);
+  if (afterKey4.activePane !== 'tab-experience') {
+    throw new Error(`Test 3 failed: expected tab-experience, got ${afterKey4.activePane}`);
+  }
 
   // Test 4: Back navigation (ESC)
   console.log('\n[Test 4] Simulating ESC to go back...');
@@ -199,6 +208,9 @@ async function run() {
     };
   })()`);
   console.log('[Test 4] State after ESC:', afterEsc);
+  if (afterEsc.activePane !== 'tab-projects') {
+    throw new Error(`Test 4 failed: expected tab-projects, got ${afterEsc.activePane}`);
+  }
 
   // Test 5: Click on Back Button
   console.log('\n[Test 5] Simulating click on Back Button (#p5-back-btn)...');
@@ -222,6 +234,9 @@ async function run() {
     };
   })()`);
   console.log('[Test 5] State after back button click:', afterBackBtn);
+  if (afterBackBtn.activePane !== 'tab-skills') {
+    throw new Error(`Test 5 failed: expected tab-skills, got ${afterBackBtn.activePane}`);
+  }
 
   console.log('\n[Test] Recent Console Logs:');
   consoleLogs.slice(-10).forEach(l => console.log(l));

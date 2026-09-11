@@ -76,8 +76,10 @@ class MonaNavigatorImpl implements MonaNavigator {
     wrapper.innerHTML = `
       <div class="mona-bubble-wrap" id="mona-bubble-wrap">
         <div class="mona-speaker-badge">
-          <span class="mona-badge-icon">🐱</span>
-          <span class="mona-badge-name">MORGANA // NAVIGATOR</span>
+          <div class="mona-badge-identity">
+            <img src="/images/p5r/morgana.png" alt="Mona" class="mona-badge-thumb" />
+            <span class="mona-badge-name">MORGANA // NAVIGATOR</span>
+          </div>
           <button class="mona-minimize-btn" id="mona-minimize-btn" title="Toggle Advisor">_</button>
         </div>
         <div class="mona-bubble-body">
@@ -86,26 +88,9 @@ class MonaNavigatorImpl implements MonaNavigator {
         <div class="mona-bubble-tail"></div>
       </div>
 
-      <button class="mona-avatar-badge" id="mona-avatar-btn" title="Click for Mona's Tactical Advice">
+      <button class="mona-avatar-badge" id="mona-avatar-btn" title="Click for Mona's Tactical Advice" aria-label="Mona Tactical Advice">
         <div class="mona-avatar-icon">
-          <svg viewBox="0 0 48 48" class="mona-svg" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="24" cy="24" r="22" fill="#000000" stroke="#FFDE00" stroke-width="2.5" />
-            <!-- Cat Ears -->
-            <polygon points="12,18 7,4 20,12" fill="#000000" stroke="#E60012" stroke-width="2" />
-            <polygon points="36,18 41,4 28,12" fill="#000000" stroke="#E60012" stroke-width="2" />
-            <!-- Yellow Bandana collar -->
-            <path d="M12,36 Q24,44 36,36 L30,44 Q24,46 18,44 Z" fill="#FFDE00" />
-            <!-- Blue Eyes -->
-            <ellipse cx="17" cy="22" rx="4.5" ry="6" fill="#00F0FF" />
-            <ellipse cx="31" cy="22" rx="4.5" ry="6" fill="#00F0FF" />
-            <circle cx="17" cy="22" r="2" fill="#000000" />
-            <circle cx="31" cy="22" r="2" fill="#000000" />
-            <circle cx="18.5" cy="20.5" r="1" fill="#FFFFFF" />
-            <circle cx="32.5" cy="20.5" r="1" fill="#FFFFFF" />
-            <!-- White Snout -->
-            <ellipse cx="24" cy="29" rx="6" ry="4" fill="#FFFFFF" />
-            <polygon points="23,27 25,27 24,29" fill="#E60012" />
-          </svg>
+          <img src="/images/p5r/morgana.png" alt="Morgana Field Navigator" class="mona-avatar-img" />
         </div>
         <span class="mona-status-dot"></span>
       </button>

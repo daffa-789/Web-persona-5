@@ -33,7 +33,11 @@ class GoalModalControllerImpl implements GoalModalController {
   }
 
   private createDom(): void {
-    if (document.getElementById('p5-goal-modal')) return;
+    const existing = document.getElementById('p5-goal-modal');
+    if (existing) {
+      this.overlayEl = existing;
+      return;
+    }
 
     const overlay = document.createElement('div');
     overlay.id = 'p5-goal-modal';

@@ -264,6 +264,9 @@ async function run() {
     returnByValue: true
   });
   console.log('[Test 5] Teamwork modal state:', teamworkState.result.value);
+  if (!teamworkState.result?.value?.visible || teamworkState.result?.value?.pillarCount !== 5) {
+    throw new Error(`Test 5 Failed: Expected 5 teamwork pillars, got ${teamworkState.result?.value?.pillarCount}`);
+  }
 
   // Dismiss via ESC
   await send('Runtime.evaluate', {
@@ -298,6 +301,9 @@ async function run() {
     returnByValue: true
   });
   console.log('[Test 6] Knowledge Codex state:', codexState.result.value);
+  if (!codexState.result?.value?.visible || codexState.result?.value?.articleCount !== 4) {
+    throw new Error(`Test 6 Failed: Expected 4 codex articles, got ${codexState.result?.value?.articleCount}`);
+  }
 
   // Dismiss via ESC
   await send('Runtime.evaluate', {

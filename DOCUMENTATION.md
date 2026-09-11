@@ -62,6 +62,7 @@ Web persona 5/
 │       ├── 📄 teamworkModal.ts        ← [T] /teamwork-preview — Studio Collaboration & Agile Pipelines
 │       ├── 📄 learnCodexModal.ts      ← [L] //learn — Phantom Thieves Knowledge Codex
 │       ├── 📄 boostMode.ts            ← [O] /boost — Palace Overclock 120 FPS Turbo Mode
+│       ├── 📄 adviceModal.ts          ← ⭐ /advice & /sarannya — Strategic Career Advice for Daffa
 │       ├── 📄 heistModal.ts           ← Modal Blueprint Proyek (detail arsitektur game)
 │       ├── 📄 helpModal.ts            ← Modal Field Manual (panduan keyboard & kontrol)
 │       ├── 📄 heists.ts               ← Komponen logic section HEISTS
@@ -258,6 +259,9 @@ Seluruh sistem diverifikasi menggunakan skrip otomatisasi CDP (Chrome DevTools P
 # Menjalankan build produksi TypeScript
 npm run build
 
+# Menjalankan pengujian 10 sistem core (Goal, Schedule, Browser, Grill-Me, Teamwork, Learn, Boost, Palette, Socials, Advice)
+node scripts/test-all-systems.mjs
+
 # Menjalankan pengujian 6 sistem slash & Command Palette
 node scripts/test-slash-systems.mjs
 
@@ -270,11 +274,17 @@ node scripts/test-audio-isolation.mjs
 # Menjalankan pengujian modal blueprint, advisor Morgana, dan Field Manual
 node scripts/test-new-systems.mjs
 
-# Menjalankan pengujian pengiriman Calling Card
+# Menjalankan pengujian pengiriman Calling Card & reset form state
 node scripts/test-callingcard.mjs
 
-# Menjalankan pengujian responsive layout (Mobile, Tablet, Desktop)
+# Menjalankan pengujian responsive layout (Mobile 375px, Tablet 768px, Desktop 1440px)
 node scripts/test-responsive.mjs
+
+# Menjalankan pengujian real mouse click hit-testing via CDP
+node scripts/test-click.mjs
+
+# Menjalankan pengujian transisi timeline comic wipe (450ms budget)
+node scripts/test-timeline.mjs
 ```
 
 ---

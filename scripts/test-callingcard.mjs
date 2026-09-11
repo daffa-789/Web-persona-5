@@ -109,6 +109,12 @@ async function run() {
     })()
   `, returnByValue: true });
   console.log('[E2E Calling Card] Stamp State:', stampState.result.value);
+  if (!stampState.result?.value?.stampVisible) {
+    console.error('[E2E Calling Card] FAIL: Stamp was not visible after submission!');
+    ws.close();
+    chrome.kill();
+    process.exit(1);
+  }
 
   // Click reset button
   await send('Runtime.evaluate', { expression: "document.getElementById('btn-reset-calling-card').click()" });
@@ -126,7 +132,14 @@ async function run() {
     })()
   `, returnByValue: true });
   console.log('[E2E Calling Card] Reset State:', resetState.result.value);
+  if (resetState.result?.value?.stampVisible) {
+    console.error('[E2E Calling Card] FAIL: Stamp still visible after reset!');
+    ws.close();
+    chrome.kill();
+    process.exit(1);
+  }
 
+  console.log('[E2E Calling Card] SUCCESS: All assertions passed.');
   ws.close();
   chrome.kill();
   process.exit(0);

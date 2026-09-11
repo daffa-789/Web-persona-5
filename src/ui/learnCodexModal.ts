@@ -293,7 +293,7 @@ class LearnCodexControllerImpl implements LearnCodexController {
         <!-- Article Selector Tabs -->
         <div class="grill-tabs-bar codex-tabs-bar">
           ${CODEX_ARTICLES.map((a, i) => `
-            <button type="button" class="codex-tab-btn ${i === 0 ? 'active' : ''}" data-aid="${a.id}">
+            <button type="button" class="grill-tab-btn codex-tab-btn ${i === 0 ? 'active' : ''}" data-aid="${a.id}">
               <span>${a.category}</span>
             </button>
           `).join('')}

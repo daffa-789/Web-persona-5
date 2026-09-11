@@ -33,6 +33,8 @@ import { boostModeController } from './boostMode';
 import { commandPaletteController } from './commandPalette';
 import { helpModalController } from './helpModal';
 import { goalModalController } from './goalModal';
+import { heistModalController } from './heistModal';
+import { adviceModalController } from './adviceModal';
 
 export interface TabConfig {
   id: string;
@@ -677,8 +679,14 @@ export class P5RNavigationController implements NavigationController {
    * Switches active navigation tab within sub-600ms budget
    */
   public async setActiveTab(tabId: string, options?: { playAudio?: boolean }): Promise<void> {
-    // Idempotent check & transition lock protection
-    if (this.isTransitioning || this.activeTabId === tabId) return;
+    // Idempotent check
+    if (this.activeTabId === tabId) return;
+
+    // If an animation is in flight, cleanly preempt it
+    if (this.isTransitioning) {
+      p5rTransitions.cancelActiveTransitions();
+      this.isTransitioning = false;
+    }
 
     this.isTransitioning = true;
     document.body.classList.add('transitioning-lock');
@@ -796,31 +804,22 @@ export class P5RNavigationController implements NavigationController {
       return;
     }
 
-    // 7. If Heist blueprint modal is open, close it
-    const heistModal = document.getElementById('p5-heist-dossier-modal') || document.getElementById('heist-blueprint-modal');
-    if (heistModal && heistModal.classList.contains('visible')) {
-      const closeBtn = document.getElementById('btn-close-heist-modal');
-      if (closeBtn) {
-        closeBtn.click();
-      } else {
-        heistModal.classList.remove('visible');
-        heistModal.classList.add('hidden');
-        p5rAudio.playMenuBack();
-      }
+
+    // 8. If Strategic Advice modal is open, close it
+    if (adviceModalController.isOpen()) {
+      adviceModalController.close();
       return;
     }
 
-    // 8. If Field manual modal is open, close it
-    const manualModal = document.getElementById('p5-field-manual-modal');
-    if (manualModal && manualModal.classList.contains('visible')) {
-      const closeBtn = document.getElementById('btn-close-manual') || document.getElementById('btn-close-manual-modal');
-      if (closeBtn) {
-        closeBtn.click();
-      } else {
-        manualModal.classList.remove('visible');
-        setTimeout(() => manualModal.classList.add('hidden'), 250);
-        p5rAudio.playMenuBack();
-      }
+    // 9. If Heist blueprint modal is open, close it
+    if (heistModalController.isOpen()) {
+      heistModalController.close();
+      return;
+    }
+
+    // 10. If Field manual modal is open, close it
+    if (helpModalController.isOpen()) {
+      helpModalController.close();
       return;
     }
 
@@ -969,8 +968,8 @@ export class P5RNavigationController implements NavigationController {
     commandPaletteController.registerCommand({
       id: 'cmd-learn',
       command: '/learn',
-      aliases: ['learn', 'codex', 'guides', 'articles', 'tutorial', 'docs'],
-      label: 'Phantom Thieves Knowledge Codex',
+      aliases: ['//learn', 'learn', 'codex', 'guides', 'articles', 'tutorial', 'docs'],
+      label: 'Phantom Thieves Knowledge Codex (//learn)',
       desc: 'Deep architecture writeups: C++20 Arena Allocator, Froxel Shaders, Rollback Netcode',
       icon: '📚',
       badge: 'KEY [L]',
@@ -986,6 +985,17 @@ export class P5RNavigationController implements NavigationController {
       icon: '⚡',
       badge: 'KEY [O]',
       action: () => boostModeController.toggle()
+    });
+
+    commandPaletteController.registerCommand({
+      id: 'cmd-advice',
+      command: '/advice',
+      aliases: ['sarannya', 'saran', 'advice', 'career', 'recommendations', 'portfolio-tips'],
+      label: 'Strategic Career Advice & Recommendations (/sarannya)',
+      desc: '5 studio-grade recommendations for Daffa: Calling Card CV, 3D Shaders, Audio EQ, Node Graphs',
+      icon: '💡',
+      badge: 'STRATEGY',
+      action: () => adviceModalController.open()
     });
 
     commandPaletteController.registerCommand({
@@ -1085,37 +1095,42 @@ export class P5RNavigationController implements NavigationController {
    */
   private bindUrlHashRouting(): void {
     const handleHash = () => {
-      const hash = window.location.hash.toLowerCase().replace(/^#\/?/, '');
-      if (!hash) return;
+      const rawHash = (window.location.hash || '').toLowerCase().replace(/^#\/*/, '').replace(/\/+$/, '').trim();
+      const rawPath = (window.location.pathname || '').toLowerCase().replace(/^\/+/, '').replace(/\/+$/, '').trim();
+      const route = rawHash || rawPath;
+      if (!route) return;
 
-      if (hash === 'goal' || hash === 'mission' || hash === 'objective') {
+      if (route === 'goal' || route === 'mission' || route === 'objective') {
         goalModalController.open();
-      } else if (hash === 'schedule') {
+      } else if (route === 'schedule') {
         scheduleModalController.open();
-      } else if (hash === 'browser' || hash === 'sandbox') {
+      } else if (route === 'browser' || route === 'sandbox') {
         browserSandboxController.open();
-      } else if (hash === 'grill-me' || hash === 'grill') {
+      } else if (route === 'grill-me' || route === 'grill') {
         grillMeModalController.open();
-      } else if (hash === 'teamwork-preview' || hash === 'teamwork') {
+      } else if (route === 'teamwork-preview' || route === 'teamwork') {
         teamworkModalController.open();
-      } else if (hash === 'learn' || hash === 'codex') {
+      } else if (route === 'learn' || route === 'codex' || route.includes('learn')) {
         learnCodexController.open();
-      } else if (hash === 'boost' || hash === 'overclock') {
+      } else if (route === 'boost' || route === 'overclock') {
         boostModeController.enable();
-      } else if (hash === 'dossier' || hash === 'tab-profile') {
+      } else if (route === 'advice' || route === 'sarannya' || route === 'saran' || route === 'tips') {
+        adviceModalController.open();
+      } else if (route === 'dossier' || route === 'tab-profile') {
         this.setActiveTab('tab-profile');
-      } else if (hash === 'skills' || hash === 'tab-skills') {
+      } else if (route === 'skills' || route === 'tab-skills') {
         this.setActiveTab('tab-skills');
-      } else if (hash === 'heists' || hash === 'tab-projects') {
+      } else if (route === 'heists' || route === 'tab-projects') {
         this.setActiveTab('tab-projects');
-      } else if (hash === 'confidants' || hash === 'tab-experience') {
+      } else if (route === 'confidants' || route === 'tab-experience') {
         this.setActiveTab('tab-experience');
-      } else if (hash === 'calling-card' || hash === 'tab-contact') {
+      } else if (route === 'calling-card' || route === 'tab-contact') {
         this.setActiveTab('tab-contact');
       }
     };
 
     window.addEventListener('hashchange', handleHash);
+    window.addEventListener('popstate', handleHash);
     setTimeout(handleHash, 400);
   }
 

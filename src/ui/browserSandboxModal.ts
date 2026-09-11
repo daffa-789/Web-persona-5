@@ -68,6 +68,7 @@ class BrowserSandboxControllerImpl implements BrowserSandboxController {
     overlay.setAttribute('role', 'dialog');
     overlay.setAttribute('aria-modal', 'true');
     overlay.setAttribute('aria-labelledby', 'browser-sandbox-title');
+    
 
     overlay.innerHTML = `
       <div class="p5-manual-card p5-sandbox-card p5-card-frame">
@@ -234,6 +235,33 @@ class BrowserSandboxControllerImpl implements BrowserSandboxController {
       const clickX = ((e.clientX - rect.left) / rect.width) * this.canvasEl!.width;
       const clickY = ((e.clientY - rect.top) / rect.height) * this.canvasEl!.height;
       this.burstAt(clickX, clickY);
+    });
+
+    // Mobile / Tablet Touch Interaction
+    this.canvasEl.addEventListener('touchstart', (e) => {
+      if (e.touches.length > 0) {
+        p5rAudio.playGunCock();
+        const touch = e.touches[0];
+        const rect = this.canvasEl!.getBoundingClientRect();
+        this.mousePos.x = ((touch.clientX - rect.left) / rect.width) * this.canvasEl!.width;
+        this.mousePos.y = ((touch.clientY - rect.top) / rect.height) * this.canvasEl!.height;
+        this.mousePos.active = true;
+        this.burstAt(this.mousePos.x, this.mousePos.y);
+      }
+    }, { passive: true });
+
+    this.canvasEl.addEventListener('touchmove', (e) => {
+      if (e.touches.length > 0) {
+        const touch = e.touches[0];
+        const rect = this.canvasEl!.getBoundingClientRect();
+        this.mousePos.x = ((touch.clientX - rect.left) / rect.width) * this.canvasEl!.width;
+        this.mousePos.y = ((touch.clientY - rect.top) / rect.height) * this.canvasEl!.height;
+        this.mousePos.active = true;
+      }
+    }, { passive: true });
+
+    this.canvasEl.addEventListener('touchend', () => {
+      this.mousePos.active = false;
     });
 
     // Global triggers (#btn-browser-sandbox or [data-trigger="browser"])

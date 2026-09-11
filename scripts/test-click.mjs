@@ -147,8 +147,10 @@ async function run() {
     };
   })()`);
   console.log('[After REAL CDP Mouse Click]:', afterRealClick);
-
-  ws.close();
+  if (afterRealClick?.activePane !== 'tab-skills') {
+    throw new Error(`Real CDP mouse click failed to switch to tab-skills: got ${afterRealClick?.activePane}`);
+  }
+  console.log('[Test SUCCESS] Real mouse click hit-test verified!');
   chrome.kill();
   process.exit(0);
 }

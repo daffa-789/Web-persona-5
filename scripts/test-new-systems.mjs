@@ -83,6 +83,9 @@ async function run() {
     returnByValue: true
   });
   console.log('[Test 1] Mona initial state:', monaState.result.value);
+  if (!monaState.result?.value?.exists || !monaState.result?.value?.text) {
+    throw new Error('Test 1 failed: Morgana navigator not working');
+  }
 
   // Click Mona avatar to trigger next tip
   await send('Runtime.evaluate', { expression: "document.getElementById('mona-avatar-btn').click()" });
@@ -111,6 +114,9 @@ async function run() {
     returnByValue: true
   });
   console.log('[Test 2] Field manual open state:', manualOpen.result.value);
+  if (!manualOpen.result?.value?.visible) {
+    throw new Error('Test 2 failed: Field manual modal failed to open');
+  }
 
   // Dismiss via ESC key
   await send('Runtime.evaluate', { expression: `window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))` });
@@ -128,6 +134,9 @@ async function run() {
     returnByValue: true
   });
   console.log('[Test 2] Field manual closed state:', manualClosed.result.value);
+  if (manualClosed.result?.value?.visible) {
+    throw new Error('Test 2 failed: Field manual modal failed to close via ESC');
+  }
 
   // 3. Test Palace Infiltration Blueprint Modal
   console.log('\n[Test 3] Testing Palace Infiltration Blueprint Modal...');
@@ -160,6 +169,9 @@ async function run() {
     returnByValue: true
   });
   console.log('[Test 3] Heist blueprint modal open:', heistModalState.result.value);
+  if (!heistModalState.result?.value?.visible) {
+    throw new Error('Test 3 failed: Heist blueprint modal failed to open');
+  }
 
   // Close heist modal via close button
   await send('Runtime.evaluate', { expression: "document.getElementById('btn-close-heist-modal').click()" });
@@ -169,6 +181,9 @@ async function run() {
     returnByValue: true
   });
   console.log('[Test 3] Heist blueprint modal closed:', !heistModalClosed.result.value);
+  if (heistModalClosed.result?.value) {
+    throw new Error('Test 3 failed: Heist blueprint modal failed to close');
+  }
 
   // Verify Mona reacted to HEISTS tab switch
   const monaTabReaction = await send('Runtime.evaluate', {
@@ -177,6 +192,7 @@ async function run() {
   });
   console.log('[Test 1 Follow-up] Mona tab reaction on HEISTS:', monaTabReaction.result.value);
 
+  console.log('[Test SUCCESS] All new systems verified successfully!');
   ws.close();
   chrome.kill();
   process.exit(0);

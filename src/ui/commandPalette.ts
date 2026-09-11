@@ -214,7 +214,7 @@ class CommandPaletteControllerImpl implements CommandPaletteController {
     }
 
     this.listEl.innerHTML = this.filteredCommands.map((cmd, i) => `
-      <div class="cmd-item-row ${i === this.selectedIndex ? 'selected' : ''}" data-idx="${i}" role="option">
+      <div class="cmd-item cmd-item-row ${i === this.selectedIndex ? 'selected' : ''}" data-idx="${i}" role="option">
         <div class="cmd-icon-col">${cmd.icon}</div>
         <div class="cmd-info-col">
           <div class="flex items-center gap-2">

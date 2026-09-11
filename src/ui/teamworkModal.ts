@@ -191,7 +191,7 @@ class TeamworkModalControllerImpl implements TeamworkModalController {
         <!-- Pillar Navigation Tabs -->
         <div class="grill-tabs-bar teamwork-tabs-bar">
           ${TEAMWORK_PILLARS.map((p, i) => `
-            <button type="button" class="teamwork-tab-btn ${i === 0 ? 'active' : ''}" data-pid="${p.id}">
+            <button type="button" class="grill-tab-btn teamwork-tab-btn ${i === 0 ? 'active' : ''}" data-pid="${p.id}">
               <span>${p.tabLabel}</span>
             </button>
           `).join('')}

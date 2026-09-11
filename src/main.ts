@@ -32,6 +32,7 @@ import { learnCodexController } from './ui/learnCodexModal';
 import { boostModeController } from './ui/boostMode';
 import { commandPaletteController } from './ui/commandPalette';
 import { goalModalController } from './ui/goalModal';
+import { adviceModalController } from './ui/adviceModal';
 import {
   renderAppShell,
   renderAll,
@@ -149,6 +150,9 @@ function initCallingCard(): void {
   const openAoa = (window as unknown as Record<string, unknown>)._p5rOpenAoa as ((text?: string) => void) | undefined;
 
   let activeObjective = 'FULL-TIME STUDIO ROLE';
+  let transmitTimeout: ReturnType<typeof setTimeout> | null = null;
+  let stampTimeout: ReturnType<typeof setTimeout> | null = null;
+  const originalHTML = submitBtn ? submitBtn.innerHTML : '<span>⚡ DISPATCH CALLING CARD</span>';
 
   objBtns.forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -207,48 +211,50 @@ function initCallingCard(): void {
     // R6: Transmitting state
     submitBtn.classList.add('transmitting');
     submitBtn.disabled = true;
-    const originalHTML = submitBtn.innerHTML;
     submitBtn.innerHTML = '<span>⚡ TRANSMITTING CALLING CARD...</span>';
     p5rAudio.playConfirm();
 
-    setTimeout(() => {
+    if (transmitTimeout) clearTimeout(transmitTimeout);
+    if (stampTimeout) clearTimeout(stampTimeout);
+
+    transmitTimeout = setTimeout(() => {
       // Trigger AOA with personalized quote
       if (typeof openAoa === 'function') {
         openAoa(`"CALLING CARD RECEIVED FROM ${nameVal.toUpperCase()} // OBJECTIVE: ${activeObjective.toUpperCase()}"`);
       }
 
       // Show success stamp (R6)
-      setTimeout(() => {
+      stampTimeout = setTimeout(() => {
         form.style.display = 'none';
         if (feedbackDiv) feedbackDiv.classList.add('hidden');
         if (successDiv) successDiv.classList.add('visible');
-      }, 800);
+      }, 400);
 
       // Reset button state
       submitBtn.classList.remove('transmitting');
       submitBtn.disabled = false;
       submitBtn.innerHTML = originalHTML;
-    }, 1200);
-  });
-
-  // Ensure programmatic clicks on submitBtn trigger form submit
-  submitBtn.addEventListener('click', () => {
-    if (form.checkValidity() && !submitBtn.disabled && !submitBtn.classList.contains('transmitting')) {
-      if (typeof form.requestSubmit === 'function') {
-        form.requestSubmit();
-      } else {
-        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-      }
-    }
+    }, 500);
   });
 
   const resetBtn = document.getElementById('btn-reset-calling-card');
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {
+      if (transmitTimeout) {
+        clearTimeout(transmitTimeout);
+        transmitTimeout = null;
+      }
+      if (stampTimeout) {
+        clearTimeout(stampTimeout);
+        stampTimeout = null;
+      }
       p5rAudio.playMenuBack();
       if (successDiv) successDiv.classList.remove('visible');
       form.reset();
       form.style.display = '';
+      submitBtn.classList.remove('transmitting');
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalHTML;
       if (feedbackDiv) feedbackDiv.classList.add('hidden');
       // Reset selected objective button to the first one
       objBtns.forEach((b, i) => b.classList.toggle('selected', i === 0));
@@ -467,6 +473,9 @@ function bootstrap(): void {
 
   // 19. Palace Infiltration Goal Directive Modal (/goal)
   goalModalController.init();
+
+  // 20. Strategic Career Advice Modal (/advice, /sarannya)
+  adviceModalController.init();
 
   // 20. Post-render: inject overlays & upgrade cards
   injectPalaceOverlays();

@@ -57,6 +57,17 @@ async function run() {
   });
   await new Promise(r => ws.onopen = r);
 
+  await send('Runtime.enable');
+  ws.addEventListener('message', (event) => {
+    const msg = JSON.parse(event.data);
+    if (msg.method === 'Runtime.consoleAPICalled') {
+      console.log('[Browser Console]', msg.params.type, msg.params.args?.map(a => a.value ?? a.description ?? '').join(' '));
+    }
+    if (msg.method === 'Runtime.exceptionThrown') {
+      console.error('[Browser Exception]', JSON.stringify(msg.params.exceptionDetails, null, 2));
+    }
+  });
+
   const evaluate = async (expression) => {
     const res = await send('Runtime.evaluate', {
       expression,
@@ -66,9 +77,24 @@ async function run() {
     return res?.result?.value;
   };
 
-  // Wait for entrance to finish
-  console.log('[All Systems Test] Waiting for entrance sequence...');
-  await new Promise(r => setTimeout(r, 2200));
+  // Wait for app mount and entrance to finish
+  console.log('[All Systems Test] Waiting for app mounting & entrance sequence...');
+  await new Promise(r => setTimeout(r, 2000));
+  await evaluate(`(() => new Promise((res) => {
+    const start = Date.now();
+    const check = () => {
+      const ribbon = document.getElementById('p5-goal-ribbon');
+      const overlay = document.getElementById('p5r-entrance-overlay');
+      if (ribbon && !overlay) {
+        res({ ready: true });
+      } else if (Date.now() - start > 8000) {
+        res({ timeout: true, hasRibbon: !!ribbon, hasOverlay: !!overlay });
+      } else {
+        setTimeout(check, 100);
+      }
+    };
+    check();
+  }))()`);
 
   // 1. Test /goal
   console.log('\n--- 1. Testing /goal (Mission Directive Modal) ---');
@@ -147,7 +173,7 @@ async function run() {
   const grillState = await evaluate(`(() => {
     const m = document.getElementById('p5-grill-me-modal');
     const title = document.getElementById('grill-me-title');
-    const qCount = document.querySelectorAll('.grill-tab-btn').length;
+    const qCount = document.querySelectorAll('#p5-grill-me-modal .grill-tab-btn').length;
     return {
       visible: m?.classList.contains('visible'),
       title: title?.textContent?.trim(),
@@ -220,8 +246,8 @@ async function run() {
   await evaluate("window.dispatchEvent(new KeyboardEvent('keydown', { key: '/', bubbles: true }))");
   await new Promise(r => setTimeout(r, 300));
   const paletteState = await evaluate(`(() => {
-    const m = document.getElementById('metaverse-cmd-palette');
-    const items = document.querySelectorAll('.cmd-item').length;
+    const m = document.getElementById('p5-command-palette-modal') || document.getElementById('metaverse-cmd-palette');
+    const items = document.querySelectorAll('.cmd-item-row, .cmd-item').length;
     return {
       visible: m?.classList.contains('visible'),
       itemCount: items
@@ -251,9 +277,26 @@ async function run() {
   console.log('Mona reaction after clicking locked social card:', monaReaction);
   if (!monaReaction || !monaReaction.includes('unlinked')) throw new Error('Mona reaction missing for locked social click');
 
-  console.log('\n=========================================');
-  console.log('ALL 9 CORE PHANTOM THIEVES SYSTEMS VERIFIED SUCCESSFULLY!');
-  console.log('=========================================');
+  // 10. Test /advice (Strategic Career Advice for Daffa)
+  console.log('\n--- 10. Testing /advice (/sarannya) ---');
+  await evaluate("window.location.hash = '#advice'");
+  await new Promise(r => setTimeout(r, 350));
+  const adviceState = await evaluate(`(() => {
+    const m = document.getElementById('p5-advice-modal');
+    const tabs = document.querySelectorAll('.advice-tab-btn').length;
+    return {
+      visible: m?.classList.contains('visible'),
+      tabCount: tabs
+    };
+  })()`);
+  console.log('Advice Modal Opened via Hash #advice:', adviceState);
+  if (!adviceState.visible || adviceState.tabCount !== 5) throw new Error('Advice modal failed to open');
+  await evaluate("window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))");
+  await new Promise(r => setTimeout(r, 300));
+
+  console.log('\n=============================================================');
+  console.log('ALL 10 CORE PHANTOM THIEVES SYSTEMS VERIFIED 100% SUCCESSFULLY!');
+  console.log('=============================================================');
 
   ws.close();
   chrome.kill();
