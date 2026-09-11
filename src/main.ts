@@ -31,6 +31,7 @@ import { teamworkModalController } from './ui/teamworkModal';
 import { learnCodexController } from './ui/learnCodexModal';
 import { boostModeController } from './ui/boostMode';
 import { commandPaletteController } from './ui/commandPalette';
+import { goalModalController } from './ui/goalModal';
 import {
   renderAppShell,
   renderAll,
@@ -373,6 +374,16 @@ function upgradeSocialLinks(): void {
         </div>
       </div>`;
   });
+
+  // Helpful in-universe advice when clicking offline social beacons
+  grid.addEventListener('click', (e) => {
+    const lockedCard = (e.target as HTMLElement).closest<HTMLElement>('.slink-card-locked');
+    if (lockedCard) {
+      const name = lockedCard.getAttribute('data-social-name') || 'Social Beacon';
+      p5rAudio.playMenuBack();
+      monaNavigator.say(`🔒 ${name} transmission frequency is currently unlinked! Dispatch a direct Calling Card below to contact Joker!`, true);
+    }
+  });
 }
 
 // ============================================================================
@@ -454,7 +465,10 @@ function bootstrap(): void {
   // 18. Metaverse Command Palette (/ quick launcher)
   commandPaletteController.init();
 
-  // 19. Post-render: inject overlays & upgrade cards
+  // 19. Palace Infiltration Goal Directive Modal (/goal)
+  goalModalController.init();
+
+  // 20. Post-render: inject overlays & upgrade cards
   injectPalaceOverlays();
   upgradeSocialLinks();
 

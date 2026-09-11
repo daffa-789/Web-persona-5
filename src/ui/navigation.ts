@@ -32,6 +32,7 @@ import { learnCodexController } from './learnCodexModal';
 import { boostModeController } from './boostMode';
 import { commandPaletteController } from './commandPalette';
 import { helpModalController } from './helpModal';
+import { goalModalController } from './goalModal';
 
 export interface TabConfig {
   id: string;
@@ -520,7 +521,14 @@ export class P5RNavigationController implements NavigationController {
         return;
       }
 
-      // 10. Field Manual System Guide (? or H)
+      // 10. Palace Infiltration Goal & Mission Directive (M)
+      if (key === 'm') {
+        e.preventDefault();
+        goalModalController.open();
+        return;
+      }
+
+      // 11. Field Manual System Guide (? or H)
       if (e.key === '?' || key === 'h') {
         e.preventDefault();
         helpModalController.open();
@@ -782,6 +790,12 @@ export class P5RNavigationController implements NavigationController {
       return;
     }
 
+    // 7. If Goal Directive modal is open, close it
+    if (goalModalController.isOpen()) {
+      goalModalController.close();
+      return;
+    }
+
     // 7. If Heist blueprint modal is open, close it
     const heistModal = document.getElementById('p5-heist-dossier-modal') || document.getElementById('heist-blueprint-modal');
     if (heistModal && heistModal.classList.contains('visible')) {
@@ -975,6 +989,17 @@ export class P5RNavigationController implements NavigationController {
     });
 
     commandPaletteController.registerCommand({
+      id: 'cmd-goal',
+      command: '/goal',
+      aliases: ['goal', 'mission', 'target', 'objective', 'treasure'],
+      label: 'Palace Infiltration Goal Directive',
+      desc: 'Review current infiltration progress, strategic milestones, and treasure target',
+      icon: '🎯',
+      badge: 'KEY [M]',
+      action: () => goalModalController.open()
+    });
+
+    commandPaletteController.registerCommand({
       id: 'cmd-dossier',
       command: '/dossier',
       aliases: ['profile', 'hero', 'vitals', '1'],
@@ -1063,7 +1088,9 @@ export class P5RNavigationController implements NavigationController {
       const hash = window.location.hash.toLowerCase().replace(/^#\/?/, '');
       if (!hash) return;
 
-      if (hash === 'schedule') {
+      if (hash === 'goal' || hash === 'mission' || hash === 'objective') {
+        goalModalController.open();
+      } else if (hash === 'schedule') {
         scheduleModalController.open();
       } else if (hash === 'browser' || hash === 'sandbox') {
         browserSandboxController.open();

@@ -482,7 +482,10 @@ button, a, .clickable, .p5-ribbon-btn, .p3r-ribbon-btn, .btn-action-type, .btn-t
 .audio-ctrl-group {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  max-width: 100%;
 }
 .p5-btn-pill {
   background: var(--p5-obsidian-black);
@@ -495,6 +498,7 @@ button, a, .clickable, .p5-ribbon-btn, .p3r-ribbon-btn, .btn-action-type, .btn-t
   text-transform: uppercase;
   transform: skewX(-10deg);
   transition: all 0.2s var(--p5-ease-snap);
+  white-space: nowrap;
 }
 .p5-btn-pill span {
   display: inline-block;
@@ -510,6 +514,32 @@ button, a, .clickable, .p5-ribbon-btn, .p3r-ribbon-btn, .btn-action-type, .btn-t
   background: var(--p5-crimson-primary);
   border-color: var(--p5-royal-gold);
   color: var(--p5-pure-white);
+}
+
+@media (max-width: 768px) {
+  .p5r-header {
+    padding: 0.5rem 0.75rem;
+    overflow-x: hidden;
+  }
+  .header-inner {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    max-width: 100%;
+  }
+  .audio-ctrl-group {
+    justify-content: center;
+    width: 100%;
+    gap: 0.25rem;
+  }
+  .audio-ctrl-group .volume-slider-group {
+    display: none;
+  }
+  .p5-btn-pill {
+    font-size: 0.58rem;
+    padding: 0.2rem 0.45rem;
+  }
 }
 
 /* ==========================================================================
@@ -2240,7 +2270,7 @@ h1, h2, h3 {
 /* Authentic Persona 5 Back Button */
 .p5-back-btn {
   position: fixed;
-  bottom: 24px;
+  bottom: 84px;
   left: 24px;
   z-index: 9980;
   display: flex;
@@ -2394,7 +2424,7 @@ h1, h2, h3 {
     display: none; /* Hide helper strip on small mobile screens to keep UI uncluttered */
   }
   .p5-back-btn {
-    bottom: 16px;
+    bottom: 76px;
     left: 16px;
     padding: 0.35rem 0.8rem;
   }
@@ -2585,6 +2615,7 @@ h1, h2, h3 {
   position: fixed;
   bottom: 24px;
   left: 24px;
+  right: auto;
   z-index: 60;
   display: flex;
   flex-direction: column;
@@ -2599,7 +2630,7 @@ h1, h2, h3 {
 
 .mona-bubble-wrap {
   position: relative;
-  max-width: 320px;
+  max-width: min(320px, calc(100vw - 48px));
   background: rgba(13, 13, 17, 0.96);
   border: 2px solid #28282e;
   border-left: 5px solid var(--p5-royal-gold);
@@ -2641,16 +2672,19 @@ h1, h2, h3 {
 
 .mona-minimize-btn {
   background: transparent;
-  border: none;
-  color: #888;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
   font-family: var(--font-mono);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
+  padding: 0 6px;
   cursor: pointer;
-  padding: 0 4px;
+  transition: all 0.2s ease;
+  line-height: 1;
 }
 
 .mona-minimize-btn:hover {
-  color: var(--p5-crimson-primary);
+  background: var(--p5-crimson-primary);
+  border-color: var(--p5-crimson-primary);
 }
 
 .mona-bubble-body {
@@ -2658,10 +2692,10 @@ h1, h2, h3 {
 }
 
 .mona-text {
-  font-family: var(--font-main);
+  font-family: var(--font-mono);
   font-size: 0.78rem;
-  color: var(--p5-pure-white);
-  line-height: 1.4;
+  line-height: 1.45;
+  color: #f0f0f0;
   margin: 0;
 }
 
@@ -2669,6 +2703,7 @@ h1, h2, h3 {
   position: absolute;
   bottom: -9px;
   left: 20px;
+  right: auto;
   width: 0;
   height: 0;
   border-left: 9px solid transparent;
@@ -2739,11 +2774,12 @@ h1, h2, h3 {
 
 @media (max-width: 768px) {
   .p5-mona-container {
-    bottom: 60px;
+    bottom: 16px;
     left: 12px;
+    right: auto;
   }
   .mona-bubble-wrap {
-    max-width: 240px;
+    max-width: min(260px, calc(100vw - 32px));
     padding: 0.6rem 0.8rem;
   }
 }
@@ -3128,6 +3164,13 @@ h1, h2, h3 {
   font-size: 0.72rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.p5-goal-ribbon:hover {
+  background: #1a0507;
+  border-bottom-color: #FFDE00;
+  box-shadow: 0 4px 15px rgba(230, 0, 18, 0.4);
 }
 .p5-goal-tag {
   color: #FFDE00;
@@ -3136,6 +3179,16 @@ h1, h2, h3 {
 .p5-goal-text {
   color: #fff;
   font-weight: 700;
+}
+.p5-goal-key-badge {
+  background: #E60012;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 900;
+  padding: 1px 6px;
+  border: 1px solid #FFDE00;
+  border-radius: 2px;
+  letter-spacing: 0.05em;
 }
 
 /* ==========================================================================
@@ -3192,7 +3245,7 @@ h1, h2, h3 {
   margin-bottom: 1rem;
   transform: skewX(4deg);
 }
-.grill-tab-btn {
+.grill-tab-btn, .teamwork-tab-btn, .codex-tab-btn {
   background: #111;
   border: 1px solid #333;
   color: #aaa;
@@ -3204,16 +3257,16 @@ h1, h2, h3 {
   transition: all 0.18s ease;
   transform: skewX(-6deg);
 }
-.grill-tab-btn > span {
+.grill-tab-btn > span, .teamwork-tab-btn > span, .codex-tab-btn > span {
   display: inline-block;
   transform: skewX(6deg);
 }
-.grill-tab-btn:hover {
+.grill-tab-btn:hover, .teamwork-tab-btn:hover, .codex-tab-btn:hover {
   background: #222;
   color: #fff;
   border-color: #FFDE00;
 }
-.grill-tab-btn.active {
+.grill-tab-btn.active, .teamwork-tab-btn.active, .codex-tab-btn.active {
   background: #E60012;
   color: #fff;
   border-color: #FFDE00;

@@ -80,6 +80,7 @@ class BoostModeControllerImpl implements BoostModeController {
 
     if (this.speedLinesEl) {
       this.speedLinesEl.classList.remove('hidden');
+      this.speedLinesEl.classList.add('active');
     }
 
     // Update Boost Toggle buttons
@@ -115,6 +116,7 @@ class BoostModeControllerImpl implements BoostModeController {
     p5rAudio.playConfirm();
 
     if (this.speedLinesEl) {
+      this.speedLinesEl.classList.remove('active');
       this.speedLinesEl.classList.add('hidden');
     }
 
@@ -152,7 +154,7 @@ class BoostModeControllerImpl implements BoostModeController {
     `;
     this.toastEl.classList.remove('hidden');
     this.toastEl.classList.remove('toast-exit');
-    this.toastEl.classList.add('toast-enter');
+    this.toastEl.classList.add('toast-enter', 'active');
 
     setTimeout(() => {
       if (this.toastEl) {

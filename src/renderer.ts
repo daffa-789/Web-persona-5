@@ -110,9 +110,10 @@ export function renderAppShell(root: HTMLElement = document.getElementById('app'
       </div>
 
       <!-- Infiltration Goal Ribbon (/goal) -->
-      <div class="p5-goal-ribbon">
+      <div class="p5-goal-ribbon" id="p5-goal-ribbon" role="button" tabindex="0" title="Click to inspect Palace Infiltration Directive [/goal] [M]" aria-label="Palace Infiltration Mission Directive">
         <span class="p5-goal-tag">★ INFILTRATION TARGET:</span>
         <span class="p5-goal-text">LIBERATE 120 FPS GAMEPLAY ARCHITECTURE // SECURE LEAD STUDIO ROLE</span>
+        <span class="p5-goal-key-badge">[M]</span>
       </div>
     </header>
 

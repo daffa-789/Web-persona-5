@@ -4,32 +4,44 @@ import http from 'http';
 const CHROME_PATH = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const TEMP_PROFILE = process.env.TEMP + '\\chrome-p5r-test-' + Date.now();
 
+const PORT = 9449;
+
 async function run() {
   const chrome = spawn(CHROME_PATH, [
     '--headless=new',
-    '--remote-debugging-port=9222',
+    `--remote-debugging-port=${PORT}`,
     '--remote-allow-origins=*',
     '--disable-gpu',
+    '--window-size=1440,900',
     `--user-data-dir=${TEMP_PROFILE}`,
     'http://localhost:5173/'
   ], { stdio: 'ignore' });
 
   let targets = null;
-  for (let i = 0; i < 20; i++) {
-    await new Promise(r => setTimeout(r, 500));
+  for (let i = 0; i < 25; i++) {
+    await new Promise(r => setTimeout(r, 400));
     try {
-      targets = await new Promise((resolve, reject) => {
-        http.get('http://127.0.0.1:9222/json/list', (res) => {
+      targets = await new Promise((resolve) => {
+        const req = http.get(`http://127.0.0.1:${PORT}/json/list`, (res) => {
           let data = '';
           res.on('data', chunk => data += chunk);
-          res.on('end', () => resolve(JSON.parse(data)));
-        }).on('error', reject);
+          res.on('end', () => {
+            try { resolve(JSON.parse(data)); } catch { resolve(null); }
+          });
+        });
+        req.on('error', () => resolve(null));
       });
-      if (targets && targets.length > 0) break;
+      if (targets && targets.length > 0 && targets.some(t => t.type === 'page' && t.url.includes('5173'))) break;
     } catch {}
   }
 
-  const page = targets.find(t => t.type === 'page');
+  if (!targets) {
+    console.error('Failed to connect to Chrome CDP on port', PORT);
+    chrome.kill();
+    process.exit(1);
+  }
+
+  const page = targets.find(t => t.type === 'page' && t.url.includes('5173')) || targets.find(t => t.type === 'page');
   const ws = new WebSocket(page.webSocketDebuggerUrl);
   await new Promise((res) => ws.onopen = res);
 
@@ -57,19 +69,38 @@ async function run() {
       returnByValue: true,
       awaitPromise: true
     });
-    return res.result?.result?.value;
+    if (res?.result?.exceptionDetails) {
+      console.error('CDP Evaluation Exception:', JSON.stringify(res.result.exceptionDetails, null, 2));
+    }
+    return res?.result?.result?.value ?? res?.result?.value;
   }
 
   await send('Runtime.enable');
   await send('Page.enable');
 
-  await new Promise(r => setTimeout(r, 2500));
+  console.log('[Test Timeline] Waiting for app mounting & entrance sequence...');
+  await new Promise(r => setTimeout(r, 2000));
+  await evaluate(`(() => new Promise((res) => {
+    const start = Date.now();
+    const check = () => {
+      const btn = document.querySelector('.p5-ribbon-btn[data-tab="tab-skills"]');
+      const overlay = document.getElementById('p5r-entrance-overlay');
+      if (btn && !overlay) {
+        res({ ready: true });
+      } else if (Date.now() - start > 8000) {
+        res({ timeout: true });
+      } else {
+        setTimeout(check, 100);
+      }
+    };
+    check();
+  }))()`);
 
   // Inspect the animation during tab switch
   const timeline = await evaluate(`(async () => {
     const log = [];
     const btn = document.querySelector('.p5-ribbon-btn[data-tab="tab-skills"]');
-    btn.click();
+    if (btn) btn.click();
     
     // Sample every 30ms for 500ms
     for (let i = 0; i < 15; i++) {
@@ -92,11 +123,20 @@ async function run() {
   })()`);
 
   console.log('[Transition Timeline Samples]:');
-  timeline.forEach(t => {
-    console.log(`t=${t.time}ms: wipes=${t.wipeCount} classes=${t.wipes.map(w => w.classes.join(',')).join(' | ')}`);
-  });
+  if (Array.isArray(timeline)) {
+    timeline.forEach(t => {
+      console.log(`t=${t.time}ms: wipes=${t.wipeCount} classes=${t.wipes.map(w => w.classes.join(',')).join(' | ')}`);
+    });
+  } else {
+    console.log('Timeline result:', timeline);
+  }
 
   ws.close();
   chrome.kill();
+  console.log('[Test Timeline] Completed successfully.');
+  process.exit(0);
 }
-run();
+run().catch((err) => {
+  console.error('[Test Timeline Error]', err);
+  process.exit(1);
+});

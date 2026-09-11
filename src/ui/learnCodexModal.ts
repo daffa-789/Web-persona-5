@@ -293,7 +293,7 @@ class LearnCodexControllerImpl implements LearnCodexController {
         <!-- Article Selector Tabs -->
         <div class="grill-tabs-bar codex-tabs-bar">
           ${CODEX_ARTICLES.map((a, i) => `
-            <button type="button" class="grill-tab-btn ${i === 0 ? 'active' : ''}" data-aid="${a.id}">
+            <button type="button" class="codex-tab-btn ${i === 0 ? 'active' : ''}" data-aid="${a.id}">
               <span>${a.category}</span>
             </button>
           `).join('')}
@@ -423,12 +423,12 @@ class LearnCodexControllerImpl implements LearnCodexController {
 
     // Article tab buttons
     this.overlayEl.addEventListener('click', (e) => {
-      const btn = (e.target as HTMLElement).closest<HTMLElement>('.codex-tabs-bar .grill-tab-btn');
+      const btn = (e.target as HTMLElement).closest<HTMLElement>('.codex-tabs-bar .codex-tab-btn');
       if (btn) {
         p5rAudio.playMenuNavigate();
         const aid = btn.getAttribute('data-aid');
         if (aid) {
-          this.overlayEl?.querySelectorAll('.codex-tabs-bar .grill-tab-btn').forEach(b => b.classList.remove('active'));
+          this.overlayEl?.querySelectorAll('.codex-tabs-bar .codex-tab-btn').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
           this.renderArticle(aid);
         }

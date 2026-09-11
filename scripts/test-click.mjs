@@ -81,16 +81,23 @@ async function run() {
   await send('Runtime.enable');
   await send('Page.enable');
 
-  console.log('[Test] Waiting for page load & entrance...');
-  await new Promise(r => setTimeout(r, 1000));
-  await evaluate(`new Promise((res) => {
+  console.log('[Test] Waiting for app mounting & entrance sequence...');
+  await new Promise(r => setTimeout(r, 2000));
+  await evaluate(`(() => new Promise((res) => {
     const start = Date.now();
     const check = () => {
-      if (!document.getElementById('p5r-entrance-overlay') || Date.now() - start > 4000) res();
-      else setTimeout(check, 50);
+      const btn = document.querySelector('.p5-ribbon-btn[data-tab="tab-skills"]');
+      const overlay = document.getElementById('p5r-entrance-overlay');
+      if (btn && !overlay) {
+        res({ ready: true });
+      } else if (Date.now() - start > 8000) {
+        res({ timeout: true, hasBtn: !!btn, hasOverlay: !!overlay });
+      } else {
+        setTimeout(check, 100);
+      }
     };
     check();
-  })`);
+  }))()`);
 
   // Check elementFromPoint for SKILLS button
   const hitTest = await evaluate(`(() => {

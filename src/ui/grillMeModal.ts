@@ -189,7 +189,7 @@ class GrillMeModalControllerImpl implements GrillMeModalController {
     `;
 
     // Update active tab buttons
-    const tabBtns = document.querySelectorAll<HTMLElement>('.grill-tab-btn');
+    const tabBtns = this.overlayEl?.querySelectorAll<HTMLElement>('.grill-tab-btn') || [];
     tabBtns.forEach(btn => {
       btn.classList.toggle('active', btn.getAttribute('data-qid') === q.id);
     });

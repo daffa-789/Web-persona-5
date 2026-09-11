@@ -191,7 +191,7 @@ class TeamworkModalControllerImpl implements TeamworkModalController {
         <!-- Pillar Navigation Tabs -->
         <div class="grill-tabs-bar teamwork-tabs-bar">
           ${TEAMWORK_PILLARS.map((p, i) => `
-            <button type="button" class="grill-tab-btn ${i === 0 ? 'active' : ''}" data-pid="${p.id}">
+            <button type="button" class="teamwork-tab-btn ${i === 0 ? 'active' : ''}" data-pid="${p.id}">
               <span>${p.tabLabel}</span>
             </button>
           `).join('')}
@@ -308,12 +308,12 @@ class TeamworkModalControllerImpl implements TeamworkModalController {
 
     // Tab buttons
     this.overlayEl.addEventListener('click', (e) => {
-      const btn = (e.target as HTMLElement).closest<HTMLElement>('.teamwork-tabs-bar .grill-tab-btn');
+      const btn = (e.target as HTMLElement).closest<HTMLElement>('.teamwork-tabs-bar .teamwork-tab-btn');
       if (btn) {
         p5rAudio.playMenuNavigate();
         const pid = btn.getAttribute('data-pid');
         if (pid) {
-          this.overlayEl?.querySelectorAll('.teamwork-tabs-bar .grill-tab-btn').forEach(b => b.classList.remove('active'));
+          this.overlayEl?.querySelectorAll('.teamwork-tabs-bar .teamwork-tab-btn').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
           this.renderPillar(pid);
         }
