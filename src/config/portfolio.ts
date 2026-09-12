@@ -207,17 +207,17 @@ export const PORTFOLIO_CONFIG: P5RPortfolioConfig = {
   profile: {
     name: "DAFFA",
     codename: "JOKER",
-    title: "Lead Gameplay & Engine Programmer",
-    subTitle: "Wild Card Systems Architect // High-Performance Game Engineering",
+    title: "Lead Unity Developer & 3D Technical Artist",
+    subTitle: "Unity 3D Systems & C# Gameplay // Blender 3D Modeling & Pipeline",
     level: 99,
-    classType: "Wild Card Game Engineer",
-    quote: "I am the Phantom Thief of bottlenecks. We steal frame drops, optimize draw calls, and liberate 120 FPS performance from the deepest Palaces of technical debt.",
+    classType: "Unity & Blender 3D Specialist",
+    quote: "Specializing in responsive Unity C# gameplay mechanics, custom URP shaders, and seamless Blender 3D modeling & rigging pipelines.",
     vitals: {
-      hpText: "Framerate Stability 60/120 FPS // Zero Memory Leaks",
+      hpText: "Unity C# Systems // Robust Game Core",
       hpPercent: 100,
-      spText: "Creative Shader Architecture 95%",
+      spText: "Blender 3D Modeling // URP Shaders & VFX",
       spPercent: 95,
-      batonPassText: "Agile Studio Sprint Ready // 100% Sync",
+      batonPassText: "Agile Studio Collaboration // 100% Sync",
       batonPassPercent: 100
     },
     socialLinks: [
@@ -265,13 +265,13 @@ export const PORTFOLIO_CONFIG: P5RPortfolioConfig = {
 
     // Legacy fields for backward compatibility
     idCode: "PHANTOM-THIEF-01",
-    role: "Lead Gameplay & Engine Programmer",
-    weapon: "C++20 Blade & Custom Shader Dagger",
-    japanese: "ジョーカー // 開発責任者",
+    role: "Lead Unity Developer & 3D Technical Artist",
+    weapon: "Unity C# Blade & Blender 3D Stylus",
+    japanese: "ジョーカー // Unity & 3D開発責任者",
     status: {
-      hp: "60/120 FPS LOCKED // ZERO LEAKS",
-      sp: "95% // CREATIVE SHADER ARCHITECTURE",
-      theurgy: "100% ALL-OUT ATTACK CHARGED",
+      hp: "UNITY C# SYSTEMS // CLEAN CODE",
+      sp: "BLENDER 3D & URP SHADERS",
+      theurgy: "100% SHOWTIME READY",
       batonPass: "100% SPRINT READY"
     }
   },
@@ -281,246 +281,246 @@ export const PORTFOLIO_CONFIG: P5RPortfolioConfig = {
     {
       code: "ST",
       label: "Strength (ST)",
-      domain: "Game Physics & Engine Core",
+      domain: "Unity Gameplay & C# Architecture",
       value: 98,
-      description: "Low-level engine architecture, deterministic physics simulation, custom spatial partitioning (BVH/Octrees), multithreaded job systems, and cache-coherent ECS memory layouts.",
+      description: "Modular Unity C# systems, responsive 3D character controllers, custom PhysX collision handling, ScriptableObject event architectures, and high-throughput DOTS/Burst gameplay routines.",
       technologies: [
-        "C++20",
-        "C#",
-        "Custom Memory Allocators",
-        "Multithreading / Job Systems",
-        "SIMD Intrinsic Ops",
-        "Spatial Partitioning (BVH)",
-        "Data-Oriented ECS"
+        "Unity 3D",
+        "C# (.NET Core)",
+        "Character Controllers",
+        "ScriptableObject Architecture",
+        "PhysX & Collision Sweeps",
+        "DOTS / Entities & Burst",
+        "New Input System"
       ],
       // Compatibility mappings
       param: "STRENGTH (ST)",
-      category: "Game Physics & Engine Core",
+      category: "Unity Gameplay & C# Architecture",
       score: 98,
-      desc: "Low-level engine architecture, deterministic physics simulation, custom spatial partitioning (BVH/Octrees), multithreaded job systems, and cache-coherent ECS memory layouts.",
-      tools: ["C++20", "C#", "Memory Allocators", "Multithreading", "SIMD", "BVH", "ECS"]
+      desc: "Modular Unity C# systems, responsive 3D character controllers, custom PhysX collision handling, ScriptableObject event architectures, and high-throughput DOTS/Burst gameplay routines.",
+      tools: ["Unity 3D", "C#", "Character Controllers", "ScriptableObjects", "PhysX", "DOTS / Burst", "Input System"]
     },
     {
       code: "MA",
       label: "Magic (MA)",
-      domain: "Graphics & Shader Programming",
+      domain: "Blender 3D Modeling & Texturing",
       value: 96,
-      description: "HLSL/GLSL programmable pipeline, GPU compute shaders, volumetric ray marching, PBR materials, custom post-processing passes, and GPU-driven particle simulations.",
+      description: "End-to-end 3D asset pipeline in Blender: game-ready low-poly modeling, non-destructive modifiers, high-to-low normal map baking, clean quad topology, and PBR procedural texturing.",
       technologies: [
-        "HLSL / GLSL",
-        "Compute Shaders",
-        "Volumetric Lighting",
-        "VFX Graph / Niagara",
-        "Custom PBR Shaders",
-        "Screen-Space Reflections",
-        "RenderDoc Profiling"
+        "Blender 3D",
+        "Hard-Surface Modeling",
+        "Low-Poly / High-Poly Baking",
+        "Clean Quads Topology",
+        "UV Unwrapping & Atlasing",
+        "Geometry Nodes",
+        "PBR Material Shading"
       ],
       // Compatibility mappings
       param: "MAGIC (MA)",
-      category: "Graphics & Shader Programming",
+      category: "Blender 3D Modeling & Texturing",
       score: 96,
-      desc: "HLSL/GLSL programmable pipeline, GPU compute shaders, volumetric ray marching, PBR materials, custom post-processing passes, and GPU-driven particle simulations.",
-      tools: ["HLSL", "GLSL", "Compute Shaders", "Volumetric FX", "PBR", "SSR", "RenderDoc"]
+      desc: "End-to-end 3D asset pipeline in Blender: game-ready low-poly modeling, non-destructive modifiers, high-to-low normal map baking, clean quad topology, and PBR procedural texturing.",
+      tools: ["Blender 3D", "Hard-Surface", "Baking", "Quads Topology", "UV Atlasing", "Geometry Nodes", "PBR Materials"]
     },
     {
       code: "EN",
       label: "Endurance (EN)",
-      domain: "Optimization & Profiling",
+      domain: "Unity Profiling & Optimization",
       value: 95,
-      description: "Rigorous frame budget management (16.6ms for 60 FPS / 8.3ms for 120 FPS), draw call batching, memory leak triage, GC allocation elimination, and deep CPU/GPU hardware profiling.",
+      description: "Rigorous frame-budget profiling (60-120 FPS target), memory leak diagnostics, garbage collection zeroing, draw call batching (Static/Dynamic/GPU Instancing), and occlusion culling.",
       technologies: [
-        "Draw Call Optimization",
+        "Unity Profiler",
+        "Memory Profiler",
+        "Draw Call Batching",
         "Garbage Collection Zeroing",
-        "Unreal Insights",
-        "Superluminal / Tracy",
-        "Pix / RenderDoc",
-        "Memory Footprint Triage",
-        "Frame Budget Analysis"
+        "Occlusion Culling & LODs",
+        "Texture Compression (ASTC/DXT)",
+        "Mobile & PC Performance"
       ],
       // Compatibility mappings
       param: "ENDURANCE (EN)",
-      category: "Optimization & Profiling",
+      category: "Unity Profiling & Optimization",
       score: 95,
-      desc: "Rigorous frame budget management (16.6ms for 60 FPS / 8.3ms for 120 FPS), draw call batching, memory leak triage, GC allocation elimination, and deep CPU/GPU hardware profiling.",
-      tools: ["Draw Calls", "GC Zeroing", "Unreal Insights", "Superluminal", "Tracy", "Pix", "Frame Budgets"]
+      desc: "Rigorous frame-budget profiling (60-120 FPS target), memory leak diagnostics, garbage collection zeroing, draw call batching (Static/Dynamic/GPU Instancing), and occlusion culling.",
+      tools: ["Unity Profiler", "Memory Profiler", "Draw Call Batching", "GC Zeroing", "Occlusion Culling", "Texture Compression", "LODs"]
     },
     {
       code: "AG",
       label: "Agility (AG)",
-      domain: "Gameplay Mechanics & Prototyping",
+      domain: "Blender Rigging & Unity Animation",
       value: 99,
-      description: "Snappy, responsive character controllers, state-machine combat flow (HFSM), animation blend trees, inverse kinematics (IK), and rapid 48-hour game jam prototype execution.",
+      description: "Full character skeletal rigging and weight painting in Blender, custom IK/FK bone constraints, automated FBX export, and dynamic Unity Mecanim blend trees with Animation Rigging.",
       technologies: [
-        "Character Locomotion",
-        "Hierarchical State Machines",
-        "Animation Blend Trees",
-        "Combat Hit-Stop / Juice",
-        "Root Motion & IK",
-        "Rapid Prototyping",
-        "Input Buffering"
+        "Blender Skeletal Armatures",
+        "Weight Painting & Skinning",
+        "Inverse Kinematics (IK)",
+        "Unity Mecanim Animator",
+        "2D/3D Blend Trees",
+        "Unity Animation Rigging",
+        "Root Motion & Sync"
       ],
       // Compatibility mappings
       param: "AGILITY (AG)",
-      category: "Gameplay Mechanics & Prototyping",
+      category: "Blender Rigging & Unity Animation",
       score: 99,
-      desc: "Snappy, responsive character controllers, state-machine combat flow (HFSM), animation blend trees, inverse kinematics (IK), and rapid 48-hour game jam prototype execution.",
-      tools: ["Locomotion", "HFSM State Machines", "Blend Trees", "Hit-Stop / Juice", "Root Motion", "Prototyping", "Input Buffer"]
+      desc: "Full character skeletal rigging and weight painting in Blender, custom IK/FK bone constraints, automated FBX export, and dynamic Unity Mecanim blend trees with Animation Rigging.",
+      tools: ["Blender Rigging", "Weight Painting", "IK / FK", "Mecanim", "Blend Trees", "Animation Rigging", "Root Motion"]
     },
     {
       code: "LU",
       label: "Luck (LU)",
-      domain: "Procedural Generation & Game AI",
-      value: 92,
-      description: "Algorithmic procedural dungeon synthesis via Wave Function Collapse & BSP, dynamic NavMesh navigation, tactical sensory systems, and utility-based enemy behavior trees.",
+      domain: "URP Shaders & Visual Effects",
+      value: 94,
+      description: "Custom stylized anime and PBR shaders in Unity Shader Graph, dynamic GPU particle simulations with VFX Graph, post-processing color grading, and custom render features.",
       technologies: [
-        "Behavior Trees",
-        "Utility AI Systems",
-        "Wave Function Collapse (WFC)",
-        "Binary Space Partitioning",
-        "NavMesh Dynamic Obstacles",
-        "Perlin / Simplex Noise",
-        "A* Pathfinding Heuristics"
+        "Unity Shader Graph",
+        "Universal Render Pipeline (URP)",
+        "VFX Graph & Shuriken",
+        "Custom Toon Cel-Shading",
+        "Post-Processing Stack",
+        "Decal Projectors",
+        "Blender Lighting & Baking"
       ],
       // Compatibility mappings
       param: "LUCK (LU)",
-      category: "Procedural Generation & Game AI",
-      score: 92,
-      desc: "Algorithmic procedural dungeon synthesis via Wave Function Collapse & BSP, dynamic NavMesh navigation, tactical sensory systems, and utility-based enemy behavior trees.",
-      tools: ["Behavior Trees", "Utility AI", "WFC Dungeon Gen", "BSP", "NavMesh", "Simplex Noise", "A* Pathfinding"]
+      category: "URP Shaders & Visual Effects",
+      score: 94,
+      desc: "Custom stylized anime and PBR shaders in Unity Shader Graph, dynamic GPU particle simulations with VFX Graph, post-processing color grading, and custom render features.",
+      tools: ["Shader Graph", "URP", "VFX Graph", "Cel-Shading", "Post-Processing", "Decals", "Blender Lighting"]
     }
   ],
 
-  // ── 2.3 10 ELEMENTAL GAME ENGINE AFFINITIES ───────────────────────────────
+  // ── 2.3 10 ELEMENTAL GAME ENGINE AFFINITIES (UNITY & BLENDER) ────────────
   affinities: [
     {
       id: "elem-phys",
       element: "Phys",
-      techStack: "C++ / C# Core",
+      techStack: "Unity C# Gameplay",
       affinity: "Repel",
       badgeText: "REPEL",
       icon: "⚔️",
-      notes: "Zero-cost abstractions, deterministic memory safety, and high-throughput cache alignment",
-      elem: "C++ / C# Core",
+      notes: "Responsive character controllers, finite state machines, event-driven game loops, and zero GC allocation",
+      elem: "Unity C# Gameplay",
       role: "Physical (Phys)",
       val: "repel",
-      note: "Deterministic native engine architecture, cache alignment & zero-cost abstractions"
+      note: "Responsive character controllers, finite state machines, event-driven loops, and zero GC allocation"
     },
     {
       id: "elem-gun",
       element: "Gun",
-      techStack: "Unreal Engine 5 / Blueprint",
+      techStack: "Blender 3D Modeling",
       affinity: "Null",
       badgeText: "NULL",
       icon: "🔫",
-      notes: "Gameplay Ability System (GAS), Motion Matching, Lumen/Nanite pipeline integration",
-      elem: "Unreal Engine 5",
+      notes: "Stylized characters, modular hard-surface props, clean quad retopology, and game-ready SubD modeling",
+      elem: "Blender 3D Modeling",
       role: "Ballistics (Gun)",
       val: "null",
-      note: "Gameplay Ability System (GAS), Motion Matching, native C++ & Blueprint bridges"
+      note: "Stylized characters, modular hard-surface props, clean quad retopology, and SubD modeling"
     },
     {
       id: "elem-fire",
       element: "Fire",
-      techStack: "Unity 3D / C#",
+      techStack: "Unity URP & Shaders",
       affinity: "Drain",
       badgeText: "DRAIN",
       icon: "🔥",
-      notes: "Custom Scriptable Render Pipeline (URP/HDRP), DOTS/Burst compiler, and event architectures",
-      elem: "Unity 3D / C#",
+      notes: "Custom Shader Graph cel-shading, PBR surface shaders, post-processing volume stacks, and render features",
+      elem: "Unity URP & Shaders",
       role: "Flame (Fire)",
       val: "drain",
-      note: "Custom SRP (URP/HDRP), DOTS/ECS Burst compiler, and modular gameplay architectures"
+      note: "Custom Shader Graph cel-shading, PBR surface shaders, post-processing stacks, and render features"
     },
     {
       id: "elem-ice",
       element: "Ice",
-      techStack: "Godot / GDScript",
+      techStack: "Blender Rigging & IK",
       affinity: "Null",
       badgeText: "NULL",
       icon: "❄️",
-      notes: "Lightweight modular nodes, C++ GDExtension modules, and rapid 2D/3D prototype iterations",
-      elem: "Godot Engine",
+      notes: "Skeletal deformation bones, Rigify IK/FK blending, facial shape keys, and custom weight painting",
+      elem: "Blender Rigging & IK",
       role: "Frost (Ice)",
       val: "null",
-      note: "Lightweight modular nodes, C++ GDExtension modules, and rapid 2D/3D iterations"
+      note: "Skeletal deformation bones, Rigify IK/FK blending, facial shape keys, and custom weight painting"
     },
     {
       id: "elem-elec",
       element: "Elec",
-      techStack: "Shaders (HLSL / GLSL)",
+      techStack: "Unity Mecanim Animation",
       affinity: "Repel",
       badgeText: "REPEL",
       icon: "⚡",
-      notes: "Compute pipelines, ray marching, volumetric lighting, and screen-space post-processing",
-      elem: "HLSL / GLSL Shaders",
+      notes: "1D/2D locomotion blend trees, animation rigging IK constraints, avatar masks, and state transitions",
+      elem: "Unity Mecanim",
       role: "Volt (Elec)",
       val: "repel",
-      note: "Compute pipelines, ray marching, volumetric lighting, and screen-space post-processing"
+      note: "1D/2D locomotion blend trees, animation rigging IK constraints, avatar masks, and state transitions"
     },
     {
       id: "elem-wind",
       element: "Wind",
-      techStack: "Game Physics & Mathematics",
+      techStack: "Blender Geometry Nodes",
       affinity: "Drain",
       badgeText: "DRAIN",
       icon: "🌪️",
-      notes: "Rigid-body kinematics, quaternion spatial rotations, collision response, and linear algebra",
-      elem: "Physics & Math",
+      notes: "Procedural foliage scattering, parametric curve generation, non-destructive modifiers, and mesh baking",
+      elem: "Blender Geo Nodes",
       role: "Gale (Wind)",
       val: "drain",
-      note: "Rigid-body kinematics, quaternion spatial rotations, collision response, and linear algebra"
+      note: "Procedural foliage scattering, parametric curve generation, non-destructive modifiers, and mesh baking"
     },
     {
       id: "elem-psy",
       element: "Psy",
-      techStack: "Game AI & Behavior Trees",
+      techStack: "Unity Physics & Collisions",
       affinity: "Null",
       badgeText: "NULL",
       icon: "👁️",
-      notes: "Hierarchical task networks, tactical combat perception grids, and dynamic crowd avoidance",
-      elem: "Game AI & Behavior",
+      notes: "Kinematic raycast controllers, layer-based collision matrices, joint ragdoll dynamics, and physics tuning",
+      elem: "Unity Physics",
       role: "Telekinesis (Psy)",
       val: "null",
-      note: "Hierarchical task networks, tactical combat perception grids, and crowd avoidance"
+      note: "Kinematic raycast controllers, layer-based collision matrices, joint ragdoll dynamics, and physics tuning"
     },
     {
       id: "elem-nuke",
       element: "Nuke",
-      techStack: "WebGL / WebGPU / Three.js",
+      techStack: "Unity Profiler & Opt.",
       affinity: "Repel",
       badgeText: "REPEL",
       icon: "☢️",
-      notes: "Hardware-accelerated in-browser graphics, WebAssembly compute bindings, and 60 FPS web engines",
-      elem: "WebGL & WebGPU",
+      notes: "Garbage collection spike elimination, deep CPU/GPU frame time profiling, draw call batching, and LOD culling",
+      elem: "Unity Profiler & Opt.",
       role: "Atomic (Nuke)",
       val: "repel",
-      note: "Hardware-accelerated in-browser graphics, WebAssembly compute, and 60 FPS web engines"
+      note: "GC spike elimination, deep CPU/GPU frame profiling, draw call batching, and LOD culling"
     },
     {
       id: "elem-bless",
       element: "Bless",
-      techStack: "Audio Integration (FMOD / Wwise)",
+      techStack: "Unity UI Toolkit & UX",
       affinity: "Drain",
       badgeText: "DRAIN",
       icon: "✨",
-      notes: "Interactive procedural sound design, DSP parameter automation, and dynamic combat music cues",
-      elem: "FMOD / Wwise Audio",
+      notes: "Responsive Canvas layouts, UI Toolkit USS styling, juicy tween feedback, and Persona-style diegetic HUDs",
+      elem: "Unity UI / UX Systems",
       role: "Divine (Bless)",
       val: "drain",
-      note: "Interactive procedural sound design, DSP parameter automation, and combat music cues"
+      note: "Responsive Canvas layouts, UI Toolkit USS styling, juicy tween feedback, and diegetic HUDs"
     },
     {
       id: "elem-curse",
       element: "Curse",
-      techStack: "Memory Optimization / Profiling",
+      techStack: "Blender-to-Unity Pipeline",
       affinity: "Null",
       badgeText: "NULL",
       icon: "💀",
-      notes: "Elimination of heap allocations, cache miss triage, frame budget enforcement, and zero GC spikes",
-      elem: "Memory & Profiling",
+      notes: "Seamless FBX/glTF asset pipeline, coordinate axis synchronization, packed PBR textures, and Git LFS versioning",
+      elem: "Blender -> Unity Pipeline",
       role: "Chaos (Curse)",
       val: "null",
-      note: "Elimination of heap allocations, cache miss triage, frame budgets, and zero GC spikes"
+      note: "Seamless FBX/glTF asset pipeline, axis synchronization, packed PBR textures, and Git LFS"
     }
   ],
 
@@ -649,7 +649,7 @@ export const PORTFOLIO_CONFIG: P5RPortfolioConfig = {
     }
   ],
 
-  // ── 2.5 CONFIDANTS ARCANA TIMELINE (EXPERIENCE & EDUCATION) ───────────────
+  // ── 2.5 CONFIDANTS ARCANA TIMELINE (UNITY & BLENDER CAREER) ─────────────
   confidants: [
     {
       id: "confidant-sae",
@@ -657,16 +657,16 @@ export const PORTFOLIO_CONFIG: P5RPortfolioConfig = {
       arcana: "XX. Judgement",
       character: "Sae Niijima",
       company: "Apex Interactive / Metaverse Game Labs",
-      role: "Lead Gameplay & Engine Programmer",
+      role: "Lead Unity Developer & 3D Technical Artist",
       period: "2024 — PRESENT",
-      description: "Spearheading engine core development, multithreaded ECS architectures, and high-performance gameplay systems for unannounced AAA/AA action titles. Guiding technical direction, profiling pipelines, and mentoring gameplay engineers.",
+      description: "Directing Unity client gameplay architecture and the 3D art integration pipeline. Championing asset optimization from Blender into Unity URP, authoring core C# character mechanics, and enforcing strict 60 FPS mobile/PC performance budgets.",
       deliverables: [
-        "Architected deterministic rollback networking system handling 64 players with <2ms frame processing",
-        "Cut memory footprint by 38% and stabilized 60 FPS on lower-tier hardware via custom arena allocators",
-        "Constructed modular Gameplay Ability System (GAS) adopted by 4 internal cross-functional feature teams"
+        "Engineered modular C# gameplay framework across 5 core systems with zero-allocation memory pooling",
+        "Established automated Blender-to-Unity asset pipeline reducing 3D model import & setup time by 50%",
+        "Authored custom URP Shader Graph shaders and optimized draw calls from 1,800 to under 450 with GPU instancing"
       ],
       // Compatibility field
-      desc: "Leading architecture and development of high-performance gameplay systems, deterministic rollback networking, and multithreaded engine pipelines."
+      desc: "Directing Unity client gameplay architecture and Blender 3D technical art pipeline, custom URP shaders, and 60 FPS performance optimization."
     },
     {
       id: "confidant-yusuke",
@@ -674,16 +674,16 @@ export const PORTFOLIO_CONFIG: P5RPortfolioConfig = {
       arcana: "IV. The Emperor",
       character: "Yusuke Kitagawa",
       company: "Kirijo Digital Games",
-      role: "Senior Game Systems & Graphics Engineer",
+      role: "Senior Unity Gameplay Programmer & 3D Modeler",
       period: "2022 — 2024",
-      description: "Engineered rendering features, custom HLSL/compute shaders, and animation state machine systems in Unreal Engine 5 and proprietary engines. Spearheaded profiling sessions across target platforms.",
+      description: "Modeled stylized 3D character and environment assets in Blender and implemented interactive combat mechanics in Unity. Collaborated closely with game designers and art directors to establish visual coherence.",
       deliverables: [
-        "Authored custom volumetric cloud and atmospheric scattering shader pipeline in HLSL/DirectX 12",
-        "Implemented character locomotion blend trees and inverse kinematics (IK) foot placement",
-        "Reduced draw calls from 3,200 to under 750 through GPU instancing and hierarchical LOD generation"
+        "Modeled, textured, and rigged 12+ stylized character models in Blender with clean quad topology",
+        "Developed Mecanim combat animation state machine with responsive combo input buffering",
+        "Created custom procedural foliage scatter tools in Blender Geometry Nodes for environmental set dressing"
       ],
       // Compatibility field
-      desc: "Engineered custom HLSL/compute shaders, locomotion blend trees, inverse kinematics, and GPU instancing draw call reductions."
+      desc: "Modeled stylized 3D characters in Blender, authored Mecanim combat state machines in Unity, and built procedural Geometry Nodes tools."
     },
     {
       id: "confidant-ryuji",
@@ -691,16 +691,16 @@ export const PORTFOLIO_CONFIG: P5RPortfolioConfig = {
       arcana: "VII. The Chariot",
       character: "Ryuji Sakamoto",
       company: "Shujin Interactive Works",
-      role: "Gameplay & Physics Programmer",
+      role: "Unity Gameplay & Physics Developer",
       period: "2020 — 2022",
-      description: "Developed responsive 3D character controllers, collision detection, and weapon hit-stop 'game juice' mechanics in Unity and C++. Collaborated directly with combat designers.",
+      description: "Built responsive 3D character movement, kinematic collision resolution, and satisfying combat hit-stop effects in Unity. Handled 3D prop modeling, UV unwrapping, and texture baking in Blender.",
       deliverables: [
-        "Built fluid parkour locomotion and ledge-grabbing system with responsive sub-millisecond input buffering",
-        "Created weapon impact time-dilation and screen shake camera matrix shaking algorithm",
-        "Shipped 2 commercially released indie action titles on Steam and Nintendo Switch"
+        "Created custom raycast-based character controller handling slopes, jumping, and ledge hanging",
+        "Implemented screen shake, hit-spark particle systems (VFX Graph), and dynamic time scale pause",
+        "Modeled 40+ modular environment props in Blender and baked high-to-low poly normal maps"
       ],
       // Compatibility field
-      desc: "Developed responsive 3D character controllers, combat impact hit-stop mechanics, and parkour locomotion systems."
+      desc: "Built responsive 3D character movement, kinematic raycast controllers, VFX Graph combat impacts, and Blender modular 3D props."
     },
     {
       id: "confidant-futaba",
@@ -708,16 +708,16 @@ export const PORTFOLIO_CONFIG: P5RPortfolioConfig = {
       arcana: "IX. The Hermit",
       character: "Futaba Sakura",
       company: "Leblanc Cybernetics & Indie R&D",
-      role: "Game Engine & Tools Intern / Indie Dev",
+      role: "Unity Tools & Blender Technical Artist Intern",
       period: "2019 — 2020",
-      description: "Built internal level editor tools, procedural dungeon generation algorithms (WFC / BSP), and telemetry debugging dashboards using C++, Python, and Dear ImGui.",
+      description: "Developed custom Unity Editor tools, automated model import inspectors, and procedural level generators. Modeled low-poly stylized props and configured texture atlases in Blender.",
       deliverables: [
-        "Created visual node-based behavior tree editor in Dear ImGui boosting designer workflow velocity by 3x",
-        "Implemented procedural cavern layout generator based on cellular automata and Voronoi tessellation",
-        "Authored automated build test runner and memory leak sanity checks in CI pipeline"
+        "Built custom Unity Editor window for bulk asset tagging, texture compression, and prefab generation",
+        "Modeled low-poly isometric dioramas in Blender for mobile prototype iterations",
+        "Created automated Python scripts in Blender to export batch FBX meshes with unified coordinate origins"
       ],
       // Compatibility field
-      desc: "Built procedural dungeon generators (WFC/BSP), node-based behavior tree tools in Dear ImGui, and telemetry dashboards."
+      desc: "Developed custom Unity Editor tooling windows, low-poly 3D Blender modeling, and automated Python batch export pipelines."
     },
     {
       id: "confidant-sojiro",
@@ -725,16 +725,16 @@ export const PORTFOLIO_CONFIG: P5RPortfolioConfig = {
       arcana: "V. The Hierophant",
       character: "Sojiro Sakura",
       company: "Tatsumi University of Technology",
-      role: "B.S. in Computer Science (Game Engineering & Graphics)",
+      role: "B.S. in Computer Science & Interactive 3D Game Art",
       period: "2016 — 2020",
-      description: "Graduated with First-Class Honors. Focused on Computer Graphics, Linear Algebra, Real-Time Physics Simulation, and Data-Oriented Design. President of University Game Dev Society.",
+      description: "Graduated with First-Class Honors. Dual concentration in 3D Computer Graphics and Software Engineering. Lead Developer and 3D Artist for University Game Development Guild.",
       deliverables: [
-        "Capstone: Custom Software Rasterizer from scratch in C++ simulating full 3D pipeline without GPU APIs",
-        "Winner of National 48-Hour Game Jam 2019 (Best Technical Gameplay Mechanics)",
-        "Published academic research paper on Cache-Oblivious Spatial Partitioning Trees"
+        "Capstone: Full 3D Action-Adventure playable demo built from scratch in Unity with custom Blender assets",
+        "Winner of National University Game Jam 2019 (Best 3D Art Direction & Gameplay Feel)",
+        "Authored academic paper on 'Optimizing Skeletal Mesh Deformations in Real-Time Mobile Game Engines'"
       ],
       // Compatibility field
-      desc: "First-Class Honors graduate in Computer Science. Specialized in Computer Graphics, Physics Simulation, and Custom Software Rasterizers."
+      desc: "First-Class Honors graduate in Computer Science & Interactive 3D Game Art. Specialized in Unity gameplay and Blender 3D modeling."
     }
   ],
 

@@ -24,16 +24,7 @@
 
 import { p5rAudio } from '../audio/p5rAudio';
 import { p5rTransitions } from '../transitions/transitions';
-import { grillMeModalController } from './grillMeModal';
-import { scheduleModalController } from './scheduleModal';
-import { browserSandboxController } from './browserSandboxModal';
-import { teamworkModalController } from './teamworkModal';
-import { learnCodexController } from './learnCodexModal';
-import { boostModeController } from './boostMode';
-import { commandPaletteController } from './commandPalette';
 import { helpModalController } from './helpModal';
-import { goalModalController } from './goalModal';
-import { heistModalController } from './heistModal';
 import { adviceModalController } from './adviceModal';
 
 export interface TabConfig {
@@ -59,11 +50,11 @@ export interface NavigationController {
 export const P5R_TABS: TabConfig[] = [
   {
     id: 'tab-profile',
-    label: 'DOSSIER',
-    jpLabel: 'ステータス',
+    label: 'PROFILE',
+    jpLabel: 'プロフィール',
     code: '01',
     key: '1',
-    caption: 'OPERATIVE TELEMETRY // WILD CARD ACCESS',
+    caption: 'OPERATIVE PROFILE // WILD CARD ACCESS',
     jokerStance: {
       transform: 'translateY(0px) scale(1) rotate(0deg)',
       shadow: 'drop-shadow(-12px 12px 0px #E60012)',
@@ -82,39 +73,15 @@ export const P5R_TABS: TabConfig[] = [
     },
   },
   {
-    id: 'tab-projects',
-    label: 'HEISTS',
-    jpLabel: '潜入',
-    code: '03',
-    key: '3',
-    caption: 'PALACE INFILTRATION // TARGET FILES & CLEAR STAMPS',
-    jokerStance: {
-      transform: 'translateX(-20px) translateY(-8px) scale(1.03) rotate(0.8deg)',
-      shadow: 'drop-shadow(-14px 14px 0px #E60012) drop-shadow(0 0 25px rgba(255,222,0,0.3))',
-    },
-  },
-  {
     id: 'tab-experience',
     label: 'CONFIDANTS',
     jpLabel: 'コープ',
-    code: '04',
-    key: '4',
+    code: '03',
+    key: '3',
     caption: 'COOPERATION ARCHIVE // ARCANA RANK TIMELINE',
     jokerStance: {
       transform: 'translateX(0px) translateY(6px) scale(0.99) rotate(-0.5deg)',
       shadow: 'drop-shadow(-12px 12px 0px #E60012)',
-    },
-  },
-  {
-    id: 'tab-contact',
-    label: 'CALLING CARD',
-    jpLabel: '予告状',
-    code: '05',
-    key: '5',
-    caption: 'STEAL THEIR HEARTS // DISPATCH NOTIFICATION',
-    jokerStance: {
-      transform: 'translateX(-28px) translateY(-16px) scale(1.05) rotate(-2deg)',
-      shadow: 'drop-shadow(-18px 18px 0px #E60012) drop-shadow(0 0 35px rgba(230,0,18,0.7))',
     },
   },
 ];
@@ -134,7 +101,6 @@ export class P5RNavigationController implements NavigationController {
   private isMobileDrawerOpen: boolean = false;
   private rafId: number | null = null;
   private tabHistory: string[] = ['tab-profile'];
-  private backButton: HTMLElement | null = null;
   private controllerHelper: HTMLElement | null = null;
 
   constructor() {
@@ -161,7 +127,6 @@ export class P5RNavigationController implements NavigationController {
 
     this.injectNavigationStyles();
     this.ensureCutinBanner();
-    this.ensureBackButton();
     this.ensureControllerHelper();
     this.bindMouseEvents();
     this.bindKeyboardShortcuts();
@@ -169,7 +134,6 @@ export class P5RNavigationController implements NavigationController {
     this.bindMobileDrawer();
     this.applyAriaAttributes();
     this.updateJokerStance(this.activeTabId, false);
-    this.setupCommandPaletteIntegration();
     this.bindUrlHashRouting();
   }
 
@@ -474,69 +438,6 @@ export class P5RNavigationController implements NavigationController {
 
       const key = e.key.toLowerCase();
 
-      // 3. Metaverse Quick Launcher (/) or Ctrl+K
-      if (e.key === '/' || (e.ctrlKey && key === 'k')) {
-        e.preventDefault();
-        commandPaletteController.open();
-        return;
-      }
-
-      // 4. Velvet Room Technical Due Diligence (G)
-      if (key === 'g') {
-        e.preventDefault();
-        grillMeModalController.open();
-        return;
-      }
-
-      // 5. Schedule Palace Heist Briefing (S)
-      if (key === 's' && !e.ctrlKey && !e.metaKey) {
-        e.preventDefault();
-        scheduleModalController.open();
-        return;
-      }
-
-      // 6. Playable In-Browser 120 FPS Sandbox (B)
-      if (key === 'b') {
-        e.preventDefault();
-        browserSandboxController.open();
-        return;
-      }
-
-      // 7. Studio Teamwork & Agile Blueprint (T)
-      if (key === 't') {
-        e.preventDefault();
-        teamworkModalController.open();
-        return;
-      }
-
-      // 8. Phantom Thieves Knowledge Codex (L)
-      if (key === 'l') {
-        e.preventDefault();
-        learnCodexController.open();
-        return;
-      }
-
-      // 9. Palace Overclock: 120 FPS Boost Mode (O or X)
-      if (key === 'o' || key === 'x') {
-        e.preventDefault();
-        boostModeController.toggle();
-        return;
-      }
-
-      // 10. Palace Infiltration Goal & Mission Directive (M)
-      if (key === 'm') {
-        e.preventDefault();
-        goalModalController.open();
-        return;
-      }
-
-      // 11. Field Manual System Guide (? or H)
-      if (e.key === '?' || key === 'h') {
-        e.preventDefault();
-        helpModalController.open();
-        return;
-      }
-
       // 11. Arrow keys & WASD navigation across command ribbons
       const isArrowNext = e.key === 'ArrowRight' || e.key === 'ArrowDown' || key === 'd';
       const isArrowPrev = e.key === 'ArrowLeft' || e.key === 'ArrowUp' || key === 'a' || key === 'w';
@@ -733,7 +634,6 @@ export class P5RNavigationController implements NavigationController {
       if (this.tabHistory[this.tabHistory.length - 1] !== tabId) {
         this.tabHistory.push(tabId);
       }
-      this.updateBackButtonState();
 
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('p5r:tabchange', { detail: { tabId } }));
@@ -749,12 +649,6 @@ export class P5RNavigationController implements NavigationController {
    * Navigates to previous tab or closes active modal with authentic P5 cancel SFX
    */
   public goBack(): void {
-    // 0. If Command Palette is open, close it
-    if (commandPaletteController.isOpen()) {
-      commandPaletteController.close();
-      return;
-    }
-
     // 1. If AOA modal is active, close it first (closeBtn triggers aoa_finish)
     const aoa = document.getElementById('all-out-attack-overlay');
     if (aoa && aoa.classList.contains('active')) {
@@ -768,62 +662,19 @@ export class P5RNavigationController implements NavigationController {
       return;
     }
 
-    // 2. If Schedule modal is open, close it
-    if (scheduleModalController.isOpen()) {
-      scheduleModalController.close();
-      return;
-    }
-
-    // 3. If In-Browser Engine Sandbox modal is open, close it
-    if (browserSandboxController.isOpen()) {
-      browserSandboxController.close();
-      return;
-    }
-
-    // 4. If Teamwork modal is open, close it
-    if (teamworkModalController.isOpen()) {
-      teamworkModalController.close();
-      return;
-    }
-
-    // 5. If Learn Codex modal is open, close it
-    if (learnCodexController.isOpen()) {
-      learnCodexController.close();
-      return;
-    }
-
-    // 6. If Grill-Me Technical Interview modal is open, close it
-    if (grillMeModalController.isOpen()) {
-      grillMeModalController.close();
-      return;
-    }
-
-    // 7. If Goal Directive modal is open, close it
-    if (goalModalController.isOpen()) {
-      goalModalController.close();
-      return;
-    }
-
-
-    // 8. If Strategic Advice modal is open, close it
+    // 2. If Strategic Advice modal is open, close it
     if (adviceModalController.isOpen()) {
       adviceModalController.close();
       return;
     }
 
-    // 9. If Heist blueprint modal is open, close it
-    if (heistModalController.isOpen()) {
-      heistModalController.close();
-      return;
-    }
-
-    // 10. If Field manual modal is open, close it
+    // 3. If Field manual modal is open, close it
     if (helpModalController.isOpen()) {
       helpModalController.close();
       return;
     }
 
-    // 4. Tab history navigation: play menu_back once and transition without knife_slash collision
+    // Tab history navigation: play menu_back once and transition without knife_slash collision
     p5rAudio.playMenuBack();
     if (this.tabHistory.length > 1) {
       this.tabHistory.pop(); // Pop current tab
@@ -835,49 +686,7 @@ export class P5RNavigationController implements NavigationController {
   }
 
   /**
-   * Updates visibility and active visual state of the P5 Back HUD button
-   */
-  private updateBackButtonState(): void {
-    if (this.backButton) {
-      const isSubpage = this.activeTabId !== 'tab-profile';
-      this.backButton.classList.toggle('active-subpage', isSubpage);
-    }
-  }
-
-  /**
-   * Injects the authentic Persona 5 Back HUD Button
-   */
-  private ensureBackButton(): void {
-    let btn = document.getElementById('p5-back-btn');
-    if (!btn) {
-      btn = document.createElement('button');
-      btn.id = 'p5-back-btn';
-      btn.className = 'p5-back-btn';
-      btn.setAttribute('type', 'button');
-      btn.setAttribute('title', 'Return / Cancel (ESC)');
-      btn.setAttribute('aria-label', 'Return to previous command');
-      btn.innerHTML = `
-        <span class="p5-back-key">ESC</span>
-        <span class="p5-back-symbol">Ⓑ</span>
-        <span class="p5-back-label">RETURN</span>
-      `;
-      document.body.appendChild(btn);
-
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        this.goBack();
-      });
-
-      btn.addEventListener('mouseenter', () => {
-        p5rAudio.playMenuNavigate();
-      });
-    }
-    this.backButton = btn;
-    this.updateBackButtonState();
-  }
-
-  /**
-   * Injects the Persona 5 Controller Navigation Helper Bar
+   * Injects the authentic Persona 5 Controller Navigation Helper Bar
    */
   private ensureControllerHelper(): void {
     let helper = document.getElementById('p5-controller-hud');
@@ -887,15 +696,7 @@ export class P5RNavigationController implements NavigationController {
       helper.className = 'p5-controller-hud';
       helper.innerHTML = `
         <div class="p5-hud-chip" id="hud-nav-chip"><span class="p5-chip-key">◄ ► / ▲ ▼</span><span class="p5-chip-txt">SELECT</span></div>
-        <div class="p5-hud-chip"><span class="p5-chip-key">1 - 5</span><span class="p5-chip-txt">DIRECT</span></div>
-        <div class="p5-hud-chip" id="hud-cmd-trigger" title="Command Palette [/]"><span class="p5-chip-key gold">/</span><span class="p5-chip-txt">CMDS</span></div>
-        <div class="p5-hud-chip" id="hud-schedule-trigger" title="Schedule Briefing [S]"><span class="p5-chip-key gold">S</span><span class="p5-chip-txt">SCHEDULE</span></div>
-        <div class="p5-hud-chip" id="hud-grill-trigger" title="Technical Due Diligence [G]"><span class="p5-chip-key gold">G</span><span class="p5-chip-txt">GRILL ME</span></div>
-        <div class="p5-hud-chip" id="hud-sandbox-trigger" title="120 FPS Sandbox [B]"><span class="p5-chip-key gold">B</span><span class="p5-chip-txt">120FPS</span></div>
-        <div class="p5-hud-chip" id="hud-teamwork-trigger" title="Studio Teamwork [T]"><span class="p5-chip-key gold">T</span><span class="p5-chip-txt">TEAMWORK</span></div>
-        <div class="p5-hud-chip" id="hud-learn-trigger" title="Knowledge Codex [L]"><span class="p5-chip-key gold">L</span><span class="p5-chip-txt">CODEX</span></div>
-        <div class="p5-hud-chip" id="hud-boost-trigger" title="Palace Overclock [O]"><span class="p5-chip-key red">O</span><span class="p5-chip-txt">BOOST</span></div>
-        <div class="p5-hud-chip p5-hud-back-chip" id="hud-back-trigger"><span class="p5-chip-key red">ESC / Ⓑ</span><span class="p5-chip-txt">RETURN</span></div>
+        <div class="p5-hud-chip"><span class="p5-chip-key">1 - 3</span><span class="p5-chip-txt">DIRECT</span></div>
       `;
       document.body.appendChild(helper);
 
@@ -904,194 +705,12 @@ export class P5RNavigationController implements NavigationController {
           p5rAudio.playMenuNavigate();
         });
       });
-
-      helper.querySelector('#hud-cmd-trigger')?.addEventListener('click', () => commandPaletteController.open());
-      helper.querySelector('#hud-schedule-trigger')?.addEventListener('click', () => scheduleModalController.open());
-      helper.querySelector('#hud-grill-trigger')?.addEventListener('click', () => grillMeModalController.open());
-      helper.querySelector('#hud-sandbox-trigger')?.addEventListener('click', () => browserSandboxController.open());
-      helper.querySelector('#hud-teamwork-trigger')?.addEventListener('click', () => teamworkModalController.open());
-      helper.querySelector('#hud-learn-trigger')?.addEventListener('click', () => learnCodexController.open());
-      helper.querySelector('#hud-boost-trigger')?.addEventListener('click', () => boostModeController.toggle());
-      helper.querySelector('#hud-back-trigger')?.addEventListener('click', () => this.goBack());
     }
     this.controllerHelper = helper;
   }
 
   /**
-   * Registers all Phantom Thief slash systems with the Metaverse Command Palette
-   */
-  private setupCommandPaletteIntegration(): void {
-    commandPaletteController.registerCommand({
-      id: 'cmd-schedule',
-      command: '/schedule',
-      aliases: ['schedule', 'meeting', 'interview', 'calendar', 'briefing'],
-      label: 'Schedule Palace Heist Briefing',
-      desc: 'Request a 1-on-1 studio interview or engine architecture consultation',
-      icon: '📅',
-      badge: 'KEY [S]',
-      action: () => scheduleModalController.open()
-    });
-
-    commandPaletteController.registerCommand({
-      id: 'cmd-browser',
-      command: '/browser',
-      aliases: ['browser', 'engine', 'sandbox', 'particle', 'benchmark', 'physics'],
-      label: 'Playable 120 FPS Engine Sandbox',
-      desc: 'Live interactive Canvas particle physics simulation & telemetry benchmark',
-      icon: '🌀',
-      badge: 'KEY [B]',
-      action: () => browserSandboxController.open()
-    });
-
-    commandPaletteController.registerCommand({
-      id: 'cmd-grill-me',
-      command: '/grill-me',
-      aliases: ['grill', 'interview', 'sae', 'qa', 'questions', 'technical'],
-      label: 'Sae Niijima Technical Interrogation',
-      desc: 'Challenge Joker with rigorous questions on C++20, shaders & 120 FPS profiling',
-      icon: '⚔️',
-      badge: 'KEY [G]',
-      action: () => grillMeModalController.open()
-    });
-
-    commandPaletteController.registerCommand({
-      id: 'cmd-teamwork',
-      command: '/teamwork-preview',
-      aliases: ['teamwork', 'team', 'baton-pass', 'agile', 'code-review', 'ci'],
-      label: 'Studio Teamwork & Agile Cooperation',
-      desc: 'Cross-discipline synergy, Baton Pass code reviews & Perforce CI/CD pipelines',
-      icon: '🤝',
-      badge: 'KEY [T]',
-      action: () => teamworkModalController.open()
-    });
-
-    commandPaletteController.registerCommand({
-      id: 'cmd-learn',
-      command: '/learn',
-      aliases: ['//learn', 'learn', 'codex', 'guides', 'articles', 'tutorial', 'docs'],
-      label: 'Phantom Thieves Knowledge Codex (//learn)',
-      desc: 'Deep architecture writeups: C++20 Arena Allocator, Froxel Shaders, Rollback Netcode',
-      icon: '📚',
-      badge: 'KEY [L]',
-      action: () => learnCodexController.open()
-    });
-
-    commandPaletteController.registerCommand({
-      id: 'cmd-boost',
-      command: '/boost',
-      aliases: ['boost', 'overclock', 'turbo', 'fps', 'hyperdrive'],
-      label: 'Palace Overclock: 120 FPS Boost Mode',
-      desc: 'Engage high-octane speed-lines, CRT scanlines, and 99% alert overclock telemetry',
-      icon: '⚡',
-      badge: 'KEY [O]',
-      action: () => boostModeController.toggle()
-    });
-
-    commandPaletteController.registerCommand({
-      id: 'cmd-advice',
-      command: '/advice',
-      aliases: ['sarannya', 'saran', 'advice', 'career', 'recommendations', 'portfolio-tips'],
-      label: 'Strategic Career Advice & Recommendations (/sarannya)',
-      desc: '5 studio-grade recommendations for Daffa: Calling Card CV, 3D Shaders, Audio EQ, Node Graphs',
-      icon: '💡',
-      badge: 'STRATEGY',
-      action: () => adviceModalController.open()
-    });
-
-    commandPaletteController.registerCommand({
-      id: 'cmd-goal',
-      command: '/goal',
-      aliases: ['goal', 'mission', 'target', 'objective', 'treasure'],
-      label: 'Palace Infiltration Goal Directive',
-      desc: 'Review current infiltration progress, strategic milestones, and treasure target',
-      icon: '🎯',
-      badge: 'KEY [M]',
-      action: () => goalModalController.open()
-    });
-
-    commandPaletteController.registerCommand({
-      id: 'cmd-dossier',
-      command: '/dossier',
-      aliases: ['profile', 'hero', 'vitals', '1'],
-      label: 'Jump to Dossier (Hero & Vitals)',
-      desc: 'Operative identity, Level 99 status, and frame-budget vitals',
-      icon: '🃏',
-      badge: 'KEY [1]',
-      action: () => this.setActiveTab('tab-profile')
-    });
-
-    commandPaletteController.registerCommand({
-      id: 'cmd-skills',
-      command: '/skills',
-      aliases: ['params', 'radar', 'affinities', '2'],
-      label: 'Jump to Combat Parameters & Skills',
-      desc: '5-Axis SVG radar chart & 10 elemental engine affinities',
-      icon: '📊',
-      badge: 'KEY [2]',
-      action: () => this.setActiveTab('tab-skills')
-    });
-
-    commandPaletteController.registerCommand({
-      id: 'cmd-heists',
-      command: '/heists',
-      aliases: ['projects', 'games', 'palace', '3'],
-      label: 'Jump to Palace Infiltration Projects',
-      desc: 'Featured game releases & playable technical demos',
-      icon: '🏰',
-      badge: 'KEY [3]',
-      action: () => this.setActiveTab('tab-projects')
-    });
-
-    commandPaletteController.registerCommand({
-      id: 'cmd-confidants',
-      command: '/confidants',
-      aliases: ['experience', 'career', 'timeline', '4'],
-      label: 'Jump to Confidant Career Timeline',
-      desc: 'Studio experience and education ranked from 1 to MAX',
-      icon: '🎴',
-      badge: 'KEY [4]',
-      action: () => this.setActiveTab('tab-experience')
-    });
-
-    commandPaletteController.registerCommand({
-      id: 'cmd-calling-card',
-      command: '/calling-card',
-      aliases: ['contact', 'dispatch', 'card', '5'],
-      label: 'Jump to Calling Card Dispatch',
-      desc: 'Transmit an official Phantom Thief calling card to Joker',
-      icon: '💌',
-      badge: 'KEY [5]',
-      action: () => this.setActiveTab('tab-contact')
-    });
-
-    commandPaletteController.registerCommand({
-      id: 'cmd-aoa',
-      command: '/aoa',
-      aliases: ['all-out-attack', 'showtime', 'finishing-touch'],
-      label: 'Unleash Showtime: All-Out Attack',
-      desc: 'Trigger the legendary full-screen finishing touch cinematic',
-      icon: '💥',
-      badge: 'SHOWTIME',
-      action: () => {
-        const theurgyBtn = document.getElementById('btn-trigger-theurgy-main');
-        if (theurgyBtn) theurgyBtn.click();
-      }
-    });
-
-    commandPaletteController.registerCommand({
-      id: 'cmd-help',
-      command: '/help',
-      aliases: ['manual', 'controls', 'keys', '?'],
-      label: 'Phantom Thieves Field Manual',
-      desc: 'Dual input navigation guide & keyboard telemetry',
-      icon: '📖',
-      badge: 'KEY [?]',
-      action: () => helpModalController.open()
-    });
-  }
-
-  /**
-   * Binds URL hash changes to slash commands and tabs (#schedule, #browser, #grill-me, etc.)
+   * Binds URL hash changes to tabs and modals
    */
   private bindUrlHashRouting(): void {
     const handleHash = () => {
@@ -1100,32 +719,16 @@ export class P5RNavigationController implements NavigationController {
       const route = rawHash || rawPath;
       if (!route) return;
 
-      if (route === 'goal' || route === 'mission' || route === 'objective') {
-        goalModalController.open();
-      } else if (route === 'schedule') {
-        scheduleModalController.open();
-      } else if (route === 'browser' || route === 'sandbox') {
-        browserSandboxController.open();
-      } else if (route === 'grill-me' || route === 'grill') {
-        grillMeModalController.open();
-      } else if (route === 'teamwork-preview' || route === 'teamwork') {
-        teamworkModalController.open();
-      } else if (route === 'learn' || route === 'codex' || route.includes('learn')) {
-        learnCodexController.open();
-      } else if (route === 'boost' || route === 'overclock') {
-        boostModeController.enable();
-      } else if (route === 'advice' || route === 'sarannya' || route === 'saran' || route === 'tips') {
+      if (route === 'advice' || route === 'sarannya' || route === 'saran' || route === 'tips') {
         adviceModalController.open();
-      } else if (route === 'dossier' || route === 'tab-profile') {
+      } else if (route === 'help' || route === 'manual') {
+        helpModalController.open();
+      } else if (route === 'profile' || route === 'dossier' || route === 'tab-profile') {
         this.setActiveTab('tab-profile');
       } else if (route === 'skills' || route === 'tab-skills') {
         this.setActiveTab('tab-skills');
-      } else if (route === 'heists' || route === 'tab-projects') {
-        this.setActiveTab('tab-projects');
       } else if (route === 'confidants' || route === 'tab-experience') {
         this.setActiveTab('tab-experience');
-      } else if (route === 'calling-card' || route === 'tab-contact') {
-        this.setActiveTab('tab-contact');
       }
     };
 
@@ -1162,10 +765,6 @@ export class P5RNavigationController implements NavigationController {
     if (this.cutinContainer && this.cutinContainer.parentNode) {
       this.cutinContainer.parentNode.removeChild(this.cutinContainer);
       this.cutinContainer = null;
-    }
-    if (this.backButton && this.backButton.parentNode) {
-      this.backButton.parentNode.removeChild(this.backButton);
-      this.backButton = null;
     }
     if (this.controllerHelper && this.controllerHelper.parentNode) {
       this.controllerHelper.parentNode.removeChild(this.controllerHelper);

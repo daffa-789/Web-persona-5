@@ -22,16 +22,6 @@ import { navigationController } from './ui/navigation';
 import { p5rTransitions } from './transitions/transitions';
 import { runEntrance } from './ui/entrance';
 import { monaNavigator } from './ui/monaNavigator';
-import { helpModalController } from './ui/helpModal';
-import { heistModalController } from './ui/heistModal';
-import { grillMeModalController } from './ui/grillMeModal';
-import { browserSandboxController } from './ui/browserSandboxModal';
-import { scheduleModalController } from './ui/scheduleModal';
-import { teamworkModalController } from './ui/teamworkModal';
-import { learnCodexController } from './ui/learnCodexModal';
-import { boostModeController } from './ui/boostMode';
-import { commandPaletteController } from './ui/commandPalette';
-import { goalModalController } from './ui/goalModal';
 import { adviceModalController } from './ui/adviceModal';
 import {
   renderAppShell,
@@ -39,10 +29,9 @@ import {
   renderSocialLinks,
   renderSkillParameters,
   renderAffinities,
-  renderProjects,
-  renderExperience,
-  initSecurityAlert
+  renderExperience
 } from './renderer';
+import { p5CriticalSpark, p5RankUpCelebration, p5VictoryShower } from './utils/p5Confetti';
 
 console.log(
   `%c[P5R]%c Phantom Thieves Terminal active for: ${PORTFOLIO_CONFIG.profile.name} // ${PORTFOLIO_CONFIG.profile.codename}`,
@@ -111,6 +100,7 @@ function initAllOutAttack(): void {
   const closeAoa = () => {
     if (!overlay || !overlay.classList.contains('active')) return;
     p5rAudio.playAoaFinish();
+    p5VictoryShower();
     overlay.classList.remove('active');
     // Reset aoa-close-btn animation so it re-triggers next open
     const btn = document.getElementById('aoa-close-btn');
@@ -133,172 +123,8 @@ function initAllOutAttack(): void {
     closeBtn.addEventListener('click', closeAoa);
   }
 
-  // Expose openAoa globally for callingCard
+  // Expose openAoa globally
   (window as unknown as Record<string, unknown>)._p5rOpenAoa = openAoa;
-}
-
-// ============================================================================
-// CALLING CARD: TRANSMITTING + STAMP (R6)
-// ============================================================================
-
-function initCallingCard(): void {
-  const form = document.getElementById('tactics-contact-form') as HTMLFormElement | null;
-  const submitBtn = document.getElementById('btn-submit-calling-card') as HTMLButtonElement | null;
-  const successDiv = document.getElementById('calling-card-success');
-  const feedbackDiv = document.getElementById('form-submit-feedback');
-  const objBtns = document.querySelectorAll<HTMLElement>('.btn-action-type');
-  const openAoa = (window as unknown as Record<string, unknown>)._p5rOpenAoa as ((text?: string) => void) | undefined;
-
-  let activeObjective = 'FULL-TIME STUDIO ROLE';
-  let transmitTimeout: ReturnType<typeof setTimeout> | null = null;
-  let stampTimeout: ReturnType<typeof setTimeout> | null = null;
-  const originalHTML = submitBtn ? submitBtn.innerHTML : '<span>⚡ DISPATCH CALLING CARD</span>';
-
-  objBtns.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      p5rAudio.playConfirm();
-      objBtns.forEach((b) => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      const text = btn.querySelector('span')?.textContent?.replace(/^[^\w]+/, '').trim();
-      activeObjective = text || btn.textContent?.trim() || 'FULL-TIME STUDIO ROLE';
-    });
-  });
-
-  if (!form || !submitBtn) return;
-
-  // Audio feedback when focusing inputs
-  const inputs = form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input, textarea');
-  inputs.forEach((inp) => {
-    inp.addEventListener('focus', () => {
-      p5rAudio.playMenuNavigate();
-    });
-  });
-
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    const nameInput = document.getElementById('contact-name') as HTMLInputElement | null;
-    const emailInput = document.getElementById('contact-email') as HTMLInputElement | null;
-    const msgInput = document.getElementById('contact-msg') as HTMLTextAreaElement | null;
-
-    const nameVal = nameInput?.value.trim() || '';
-    const emailVal = emailInput?.value.trim() || '';
-    const msgVal = msgInput?.value.trim() || '';
-
-    // Input validation
-    if (!nameVal || !emailVal || !msgVal) {
-      if (feedbackDiv) {
-        feedbackDiv.className = 'mt-4 p-3 bg-black/90 border-2 border-[#E60012] text-xs font-mono text-[#FFDE00] [transform:skewX(-6deg)]';
-        feedbackDiv.innerHTML = '<div class="[transform:skewX(6deg)]">⚠️ INCOMPLETE DISPATCH: ALL FIELDS ARE REQUIRED BY THE PHANTOM THIEVES!</div>';
-        feedbackDiv.classList.remove('hidden');
-      }
-      p5rAudio.playMenuBack();
-      return;
-    }
-
-    if (!emailVal.includes('@') || !emailVal.includes('.')) {
-      if (feedbackDiv) {
-        feedbackDiv.className = 'mt-4 p-3 bg-black/90 border-2 border-[#E60012] text-xs font-mono text-[#FFDE00] [transform:skewX(-6deg)]';
-        feedbackDiv.innerHTML = '<div class="[transform:skewX(6deg)]">⚠️ FREQUENCY ERROR: DIRECT EMAIL ADDRESS FORMAT INVALID!</div>';
-        feedbackDiv.classList.remove('hidden');
-      }
-      p5rAudio.playMenuBack();
-      return;
-    }
-
-    if (feedbackDiv) feedbackDiv.classList.add('hidden');
-
-    // R6: Transmitting state
-    submitBtn.classList.add('transmitting');
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span>⚡ TRANSMITTING CALLING CARD...</span>';
-    p5rAudio.playConfirm();
-
-    if (transmitTimeout) clearTimeout(transmitTimeout);
-    if (stampTimeout) clearTimeout(stampTimeout);
-
-    transmitTimeout = setTimeout(() => {
-      // Trigger AOA with personalized quote
-      if (typeof openAoa === 'function') {
-        openAoa(`"CALLING CARD RECEIVED FROM ${nameVal.toUpperCase()} // OBJECTIVE: ${activeObjective.toUpperCase()}"`);
-      }
-
-      // Show success stamp (R6)
-      stampTimeout = setTimeout(() => {
-        form.style.display = 'none';
-        if (feedbackDiv) feedbackDiv.classList.add('hidden');
-        if (successDiv) successDiv.classList.add('visible');
-      }, 400);
-
-      // Reset button state
-      submitBtn.classList.remove('transmitting');
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = originalHTML;
-    }, 500);
-  });
-
-  const resetBtn = document.getElementById('btn-reset-calling-card');
-  if (resetBtn) {
-    resetBtn.addEventListener('click', () => {
-      if (transmitTimeout) {
-        clearTimeout(transmitTimeout);
-        transmitTimeout = null;
-      }
-      if (stampTimeout) {
-        clearTimeout(stampTimeout);
-        stampTimeout = null;
-      }
-      p5rAudio.playMenuBack();
-      if (successDiv) successDiv.classList.remove('visible');
-      form.reset();
-      form.style.display = '';
-      submitBtn.classList.remove('transmitting');
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = originalHTML;
-      if (feedbackDiv) feedbackDiv.classList.add('hidden');
-      // Reset selected objective button to the first one
-      objBtns.forEach((b, i) => b.classList.toggle('selected', i === 0));
-      activeObjective = 'FULL-TIME STUDIO ROLE';
-    });
-  }
-}
-
-// ============================================================================
-// BATON PASS OVERDRIVE BOOSTER (/BOOST)
-// ============================================================================
-
-function initBatonPassBoost(): void {
-  const boostBtn = document.getElementById('btn-boost-vitals');
-  const hpBar = document.querySelector<HTMLElement>('.bar-fill.hp');
-  const spBar = document.querySelector<HTMLElement>('.bar-fill.sp');
-  const bpBar = document.getElementById('vital-baton-pass-bar');
-  const bpText = document.getElementById('vital-baton-pass-text');
-  let isBoosted = false;
-
-  if (!boostBtn) return;
-
-  boostBtn.addEventListener('click', () => {
-    isBoosted = !isBoosted;
-    if (isBoosted) {
-      p5rAudio.playAoaStart();
-      triggerAoaFlash();
-      boostBtn.classList.add('boosted');
-      boostBtn.innerHTML = '<span>⚡ BOOSTED // 120% OVERDRIVE ACTIVE</span>';
-      if (hpBar) hpBar.style.width = '100%';
-      if (spBar) spBar.style.width = '100%';
-      if (bpBar) bpBar.style.width = '100%';
-      if (bpText) bpText.textContent = '120% OVERDRIVE ACTIVE';
-      monaNavigator.say('BATON PASS MAX OVERDRIVE! All combat parameters overclocked to 120%!', true);
-    } else {
-      p5rAudio.playMenuBack();
-      boostBtn.classList.remove('boosted');
-      boostBtn.innerHTML = '<span>⚡ BATON PASS: OVERDRIVE BOOST (120%)</span>';
-      if (hpBar) hpBar.style.width = `${PORTFOLIO_CONFIG.profile.vitals.hpPercent}%`;
-      if (spBar) spBar.style.width = `${PORTFOLIO_CONFIG.profile.vitals.spPercent}%`;
-      if (bpBar) bpBar.style.width = `${PORTFOLIO_CONFIG.profile.vitals.batonPassPercent}%`;
-      if (bpText) bpText.textContent = `${PORTFOLIO_CONFIG.profile.vitals.batonPassPercent}% MAX READY`;
-    }
-  });
 }
 
 // ============================================================================
@@ -320,11 +146,11 @@ function animateVitalBars(): void {
 }
 
 // ============================================================================
-// INTERACTIVE HOVER SFX
+// INTERACTIVE HOVER SFX & COMIC CONFETTI SPARKS
 // ============================================================================
 
 function attachInteractiveSfx(): void {
-  const hoverSelectors = 'button:not(.p5-ribbon-btn), a, .slink-card, .project-conquest-card, .timeline-milestone-card';
+  const hoverSelectors = 'button, a, .slink-card, .timeline-milestone-card, .p5-hud-chip, .p5-btn-pill, .affinity-badge, .radar-stat-pill, .p5-tech-chip, .spec-ribbon';
   let lastHovered: HTMLElement | null = null;
 
   document.addEventListener('mouseover', (e) => {
@@ -334,22 +160,25 @@ function attachInteractiveSfx(): void {
       p5rAudio.playMenuNavigate();
     }
   }, { passive: true });
-}
 
-// ============================================================================
-// RENDERER: inject palace-access-overlay into project cards
-// ============================================================================
+  // Universal crisp click SFX + comic particle effects
+  document.addEventListener('click', (e) => {
+    const target = (e.target as HTMLElement)?.closest<HTMLElement>('button, a, .btn-action-type, .p5-hud-chip, .timeline-milestone-card, .slink-card, .affinity-badge, .p5-tech-chip, .spec-ribbon');
+    if (target && !target.classList.contains('p5-ribbon-btn')) {
+      p5rAudio.playMenuSelect();
 
-function injectPalaceOverlays(): void {
-  const cards = document.querySelectorAll<HTMLElement>('.project-conquest-card');
-  cards.forEach((card) => {
-    if (!card.querySelector('.palace-access-overlay')) {
-      const overlay = document.createElement('div');
-      overlay.className = 'palace-access-overlay';
-      overlay.textContent = '⚡ ACCESSING PALACE DATA...';
-      card.appendChild(overlay);
+      // Confidant card click: rank up fanfare burst
+      if (target.closest('.timeline-milestone-card')) {
+        const rect = target.getBoundingClientRect();
+        p5RankUpCelebration((rect.left + rect.width / 2) / window.innerWidth, (rect.top + rect.height / 2) / window.innerHeight);
+      }
+      // Active social link, skill badge, tech chip, or spec ribbon click: critical star spark
+      else if (target.closest('.slink-card:not(.slink-card-locked)') || target.closest('.affinity-badge') || target.closest('.p5-tech-chip') || target.closest('.spec-ribbon')) {
+        const rect = target.getBoundingClientRect();
+        p5CriticalSpark((rect.left + rect.width / 2) / window.innerWidth, (rect.top + rect.height / 2) / window.innerHeight);
+      }
     }
-  });
+  }, { passive: true });
 }
 
 // ============================================================================
@@ -387,7 +216,7 @@ function upgradeSocialLinks(): void {
     if (lockedCard) {
       const name = lockedCard.getAttribute('data-social-name') || 'Social Beacon';
       p5rAudio.playMenuBack();
-      monaNavigator.say(`🔒 ${name} transmission frequency is currently unlinked! Dispatch a direct Calling Card below to contact Joker!`, true);
+      monaNavigator.say(`🔒 ${name} transmission frequency is currently unlinked! Joker will link this channel soon!`, true);
     }
   });
 }
@@ -403,7 +232,6 @@ function mountApp(): void {
     renderSocialLinks();
     renderSkillParameters();
     renderAffinities();
-    renderProjects();
     renderExperience();
   }
 }
@@ -429,59 +257,19 @@ function bootstrap(): void {
   // 4. All-Out Attack Modal (R5)
   initAllOutAttack();
 
-  // 5. Alert telemetry
-  initSecurityAlert();
-
-  // 6. Calling Card (R6)
-  initCallingCard();
-
-  // 7. Baton Pass Overdrive Booster (/boost)
-  initBatonPassBoost();
-
-  // 8. Hover SFX
+  // 5. Hover SFX
   attachInteractiveSfx();
 
-  // 9. Morgana Tactical Field Navigator
+  // 6. Morgana Tactical Field Navigator
   monaNavigator.init();
 
-  // 10. Field Manual / Keyboard Guide Modal
-  helpModalController.init();
-
-  // 11. Palace Infiltration Blueprint Dossier Modal
-  heistModalController.init();
-
-  // 12. Technical Due Diligence Interrogation Modal (/grill-me)
-  grillMeModalController.init();
-
-  // 13. In-Browser 120 FPS Engine Benchmark Sandbox Modal (/browser)
-  browserSandboxController.init();
-
-  // 14. Palace Heist & Interview Scheduler Modal (/schedule)
-  scheduleModalController.init();
-
-  // 15. Studio Teamwork & Agile Cooperation Modal (/teamwork-preview)
-  teamworkModalController.init();
-
-  // 16. Phantom Thieves Knowledge Codex Modal (//learn)
-  learnCodexController.init();
-
-  // 17. Palace Overclock 120 FPS Boost Mode (/boost)
-  boostModeController.init();
-
-  // 18. Metaverse Command Palette (/ quick launcher)
-  commandPaletteController.init();
-
-  // 19. Palace Infiltration Goal Directive Modal (/goal)
-  goalModalController.init();
-
-  // 20. Strategic Career Advice Modal (/advice, /sarannya)
+  // 7. Strategic Career Advice Modal (/advice, /sarannya)
   adviceModalController.init();
 
-  // 20. Post-render: inject overlays & upgrade cards
-  injectPalaceOverlays();
+  // 9. Post-render: upgrade social links
   upgradeSocialLinks();
 
-  // 14. Run entrance cinematic smoothly on top
+  // 10. Run entrance cinematic smoothly on top
   runEntrance().then(() => {
     animateVitalBars();
     console.log('[P5R] Persona 5 Royal Game Developer Portfolio — ALL SYSTEMS ACTIVE.');

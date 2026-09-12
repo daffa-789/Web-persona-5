@@ -39,6 +39,7 @@
   --p5-border-accent:   var(--p5-crimson-primary);
 
   /* Typography Stack Tokens */
+  --font-p5:            'Bebas Neue', 'Anton', sans-serif;
   --font-main:          'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-title:         'Bebas Neue', 'Anton', 'Syne', 'Arial Black', Impact, sans-serif;
   --font-display:       'Anton', 'Bebas Neue', 'Arial Black', Impact, sans-serif;
@@ -144,26 +145,6 @@ button, a, .clickable, .p5-ribbon-btn, .p3r-ribbon-btn, .btn-action-type, .btn-t
 
 .p5-card-frame {
   position: relative;
-}
-.p5-card-frame::before {
-  content: '';
-  position: absolute;
-  top: 6px; left: 6px;
-  width: 16px; height: 16px;
-  border-top: 3px solid #E60012;
-  border-left: 3px solid #E60012;
-  pointer-events: none;
-  z-index: 10;
-}
-.p5-card-frame::after {
-  content: '';
-  position: absolute;
-  bottom: 6px; right: 6px;
-  width: 16px; height: 16px;
-  border-bottom: 3px solid #FFDE00;
-  border-right: 3px solid #FFDE00;
-  pointer-events: none;
-  z-index: 10;
 }
 
 /* Pure White Comic Halftone Burst Texture */
@@ -349,26 +330,26 @@ button, a, .clickable, .p5-ribbon-btn, .p3r-ribbon-btn, .btn-action-type, .btn-t
 
 .operative-title-h1 {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(3rem, 8vw, 6rem);
+  font-size: clamp(2.5rem, 5vw, 4.25rem);
   font-weight: 900;
   font-style: normal;
   text-transform: uppercase;
   letter-spacing: -0.04em;
   color: var(--p5-pure-white);
-  text-shadow: 4px 4px 0 var(--p5-crimson-primary), 8px 8px 0 var(--p5-obsidian-black);
+  text-shadow: 3px 3px 0 var(--p5-crimson-primary), 6px 6px 0 var(--p5-obsidian-black);
   line-height: 0.9;
-  margin: 0.5rem 0;
+  margin: 0.25rem 0;
   transform: skewX(-8deg);
 }
 
 .operative-subtitle {
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 800;
   color: var(--p5-royal-gold);
   text-transform: uppercase;
-  letter-spacing: 0.25em;
-  margin-bottom: 1rem;
+  letter-spacing: 0.2em;
+  margin-bottom: 0.5rem;
 }
 
 .section-tag {
@@ -571,8 +552,8 @@ button, a, .clickable, .p5-ribbon-btn, .p3r-ribbon-btn, .btn-action-type, .btn-t
   border: 2px solid #33333e;
   border-left: 6px solid var(--p5-crimson-primary);
   padding: 0.6rem 1.4rem;
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1rem;
+  font-family: var(--font-title);
+  font-size: 1.15rem;
   font-weight: 900;
   font-style: normal;
   text-transform: uppercase;
@@ -592,6 +573,7 @@ button, a, .clickable, .p5-ribbon-btn, .p3r-ribbon-btn, .btn-action-type, .btn-t
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-family: var(--font-title);
   transform: skewX(12deg) rotate(8deg);
 }
 .p5-ribbon-btn:hover, .p3r-ribbon-btn:hover {
@@ -623,10 +605,10 @@ button, a, .clickable, .p5-ribbon-btn, .p3r-ribbon-btn, .btn-action-type, .btn-t
 .joker-silhouette-container {
   position: fixed;
   bottom: -20px;
-  right: -2%;
+  right: 0%;
   height: 90vh;
   max-height: 920px;
-  z-index: 5;
+  z-index: 3;
   pointer-events: none;
   display: flex;
   align-items: flex-end;
@@ -693,12 +675,9 @@ button, a, .clickable, .p5-ribbon-btn, .p3r-ribbon-btn, .btn-action-type, .btn-t
 /* Staggered kinetic pop-in for content cards and frames */
 .tab-pane.active .p5-card-frame,
 .tab-pane.active .hero-profile-card,
-.tab-pane.active .hero-art-panel,
 .tab-pane.active .skills-param-panel,
 .tab-pane.active .affinities-table-panel,
-.tab-pane.active .project-conquest-card,
-.tab-pane.active .timeline-milestone-card,
-.tab-pane.active .calling-card-container {
+.tab-pane.active .timeline-milestone-card {
   animation: p5CardPop 0.38s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
 }
 @keyframes p5CardPop {
@@ -743,24 +722,28 @@ button, a, .clickable, .p5-ribbon-btn, .p3r-ribbon-btn, .btn-action-type, .btn-t
    11. SECTION 1: DOSSIER (HERO & VITALS HUD)
    ========================================================================== */
 .hero-portfolio-grid {
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 2rem;
-  align-items: start;
+  display: block;
+  max-width: 860px;
+  margin-left: 0;
+  margin-right: auto;
+  width: 100%;
 }
 .hero-profile-card {
-  background: rgba(13, 13, 17, 0.92);
+  background: rgba(13, 13, 17, 0.94);
   border: 2px solid #222;
   border-top: 4px solid var(--p5-crimson-primary);
-  padding: 1.75rem;
-  box-shadow: 8px 8px 0px var(--p5-obsidian-black);
+  padding: 1.5rem 1.75rem;
+  box-shadow: 10px 10px 0px var(--p5-obsidian-black);
+  position: relative;
+  z-index: 6;
+  margin-bottom: 1.5rem;
 }
 .protagonist-quote {
   font-size: 0.85rem;
   color: #ccc;
   border-left: 3px solid var(--p5-crimson-primary);
   padding-left: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
   font-style: italic;
   line-height: 1.5;
 }
@@ -769,46 +752,112 @@ button, a, .clickable, .p5-ribbon-btn, .p3r-ribbon-btn, .btn-action-type, .btn-t
   font-family: var(--font-mono);
   font-size: 0.75rem;
   color: var(--p5-crimson-primary);
-  margin-top: 0.5rem;
+  margin-top: 0.35rem;
   font-style: normal;
   font-weight: 700;
 }
-
-/* Vitals Bars Telemetry */
-.hero-vitals {
-  margin: 1.5rem 0;
-  background: var(--p5-obsidian-black);
-  border: 1px solid #333;
-  padding: 1rem;
+/* Core Arsenal Tech Chips */
+.profile-arsenal-row {
+  margin: 0.75rem 0 0.65rem 0;
 }
-.vital-row {
-  margin-bottom: 0.75rem;
+.arsenal-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--p5-royal-gold);
+  letter-spacing: 0.08em;
+  margin-bottom: 0.35rem;
 }
-.vital-row:last-child { margin-bottom: 0; }
-.vital-labels {
+.arsenal-chips-grid {
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.p5-tech-chip {
+  background: #000;
+  border: 1.5px solid #333;
+  color: #eee;
   font-family: var(--font-mono);
   font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  transform: skewX(-10deg);
+  cursor: pointer;
+  transition: all 0.2s var(--p5-ease-snap);
+}
+.p5-tech-chip span {
+  display: inline-block;
+  transform: skewX(10deg);
+}
+.p5-tech-chip:hover {
+  border-color: var(--p5-royal-gold);
+  color: var(--p5-royal-gold);
+  background: #111;
+  transform: skewX(-10deg) translateY(-2px);
+  box-shadow: 3px 3px 0 var(--p5-crimson-primary);
+}
+
+/* Slanted Comic Ribbons (Specialization Focus) */
+.profile-specializations {
+  margin: 0.65rem 0 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.spec-ribbon {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.4rem 0.8rem;
+  background: rgba(8, 8, 12, 0.85);
+  border: 1.5px solid #222;
+  border-left: 5px solid var(--p5-crimson-primary);
+  transform: skewX(-4deg);
+  transition: transform 0.2s var(--p5-ease-snap), border-color 0.2s ease, background-color 0.2s ease;
+}
+.spec-ribbon:nth-child(2) {
+  border-left-color: var(--p5-royal-gold);
+}
+.spec-ribbon:nth-child(3) {
+  border-left-color: #fff;
+}
+.spec-ribbon:hover {
+  transform: skewX(-4deg) translateX(8px);
+  background: rgba(18, 18, 24, 0.95);
+  border-color: #444;
+  box-shadow: 4px 4px 0 var(--p5-obsidian-black);
+}
+.spec-tag {
+  display: inline-block;
+  background: var(--p5-crimson-primary);
+  color: #fff;
+  font-family: var(--font-title);
+  font-size: 0.75rem;
+  font-weight: 900;
+  padding: 0.2rem 0.55rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  transform: skewX(4deg);
+}
+.spec-ribbon:nth-child(2) .spec-tag {
+  background: var(--p5-royal-gold);
+  color: #000;
+}
+.spec-ribbon:nth-child(3) .spec-tag {
+  background: #fff;
+  color: #000;
+}
+.spec-text {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: #ccc;
+  line-height: 1.45;
+  transform: skewX(4deg);
+}
+.spec-text strong {
+  color: #fff;
   font-weight: 800;
-  margin-bottom: 0.25rem;
-}
-.bar-track {
-  height: 8px;
-  background: #1a1a1a;
-  overflow: hidden;
-}
-.bar-fill.hp {
-  background: linear-gradient(90deg, #00FF66, #00cc52);
-  box-shadow: 0 0 10px rgba(0,255,102,0.6);
-}
-.bar-fill.sp {
-  background: linear-gradient(90deg, #C846FF, #a020f0);
-  box-shadow: 0 0 10px rgba(200,70,255,0.6);
-}
-.bar-fill.theurgy, .bar-fill.baton-pass {
-  background: linear-gradient(90deg, var(--p5-royal-gold), var(--p5-crimson-primary));
-  box-shadow: 0 0 10px rgba(255,222,0,0.8);
 }
 
 /* Social Links / Confidant Quick-Links */
@@ -845,30 +894,7 @@ button, a, .clickable, .p5-ribbon-btn, .p3r-ribbon-btn, .btn-action-type, .btn-t
 .slink-name { font-family: var(--font-title); font-size: 0.75rem; font-weight: 900; color: var(--p5-pure-white); }
 .slink-handle { font-family: var(--font-mono); font-size: 0.6rem; color: #888; }
 
-/* Right Hero Visual Art */
-.hero-art-panel {
-  background: rgba(13, 13, 17, 0.9);
-  border: 2px solid #222;
-  border-top: 4px solid var(--p5-royal-gold);
-  padding: 1.5rem;
-  box-shadow: 8px 8px 0 var(--p5-obsidian-black);
-  display: flex;
-  flex-direction: column;
-}
-.character-art-container {
-  height: 380px;
-  overflow: hidden;
-  position: relative;
-  background: radial-gradient(circle at center, #1a0204 0%, #000000 70%);
-  border: 1px solid #333;
-}
-.p5r-character-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: bottom center;
-  filter: drop-shadow(-8px 8px 0px var(--p5-crimson-primary));
-}
+/* Main Action Strike Buttons */
 .btn-theurgy-strike {
   display: block;
   width: 100%;
@@ -1276,12 +1302,14 @@ button, a, .clickable, .p5-ribbon-btn, .p3r-ribbon-btn, .btn-action-type, .btn-t
 .calling-card-banner {
   background: var(--p5-crimson-primary);
   color: var(--p5-pure-white);
-  padding: 0.6rem 0.9rem;
-  font-family: var(--font-title);
-  font-weight: 900;
+  padding: 0.75rem 1.1rem;
+  font-family: var(--font-main);
+  font-weight: 700;
   font-style: italic;
-  font-size: 0.9rem;
-  transform: rotate(-2deg);
+  font-size: 0.92rem;
+  line-height: 1.45;
+  letter-spacing: 0.02em;
+  transform: rotate(-1.5deg);
   margin-bottom: 1rem;
   border: 2px solid var(--p5-pure-white);
   box-shadow: 4px 4px 0 var(--p5-obsidian-black);
@@ -1290,19 +1318,20 @@ button, a, .clickable, .p5-ribbon-btn, .p3r-ribbon-btn, .btn-action-type, .btn-t
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 0.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 .btn-action-type {
   background: var(--p5-obsidian-black);
   color: #fff;
   border: 1.5px solid #333;
-  padding: 0.5rem 0.7rem;
-  font-family: var(--font-title);
-  font-size: 0.75rem;
-  font-weight: 800;
+  padding: 0.55rem 0.8rem;
+  font-family: 'Bebas Neue', var(--font-title);
+  font-size: 0.95rem;
+  font-weight: 400;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   transform: skewX(-8deg);
-  transition: all 0.2s var(--p5-ease-snap);
+  transition: all 0.18s var(--p5-ease-snap);
 }
 .btn-action-type span { display: inline-block; transform: skewX(8deg); }
 .btn-action-type:hover, .btn-action-type.selected {
@@ -2063,45 +2092,10 @@ body.transitioning-lock {
 .p5-card-frame {
   position: relative;
 }
-
-/* Red L-bracket top-left */
-.p5-card-frame::before {
-  content: '';
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  width: 18px;
-  height: 18px;
-  border-top: 3px solid #E60012;
-  border-left: 3px solid #E60012;
-  pointer-events: none;
-  z-index: 10;
-  transition: border-color 0.2s ease;
-}
-
-/* Gold L-bracket bottom-right */
+.p5-card-frame::before,
 .p5-card-frame::after {
-  content: '';
-  position: absolute;
-  bottom: 6px;
-  right: 6px;
-  width: 18px;
-  height: 18px;
-  border-bottom: 3px solid #FFDE00;
-  border-right: 3px solid #FFDE00;
-  pointer-events: none;
-  z-index: 10;
-  transition: border-color 0.2s ease;
-}
-
-/* Corner glow on hover */
-.p5-card-frame:hover::before {
-  border-color: #FF1B2D;
-  box-shadow: -2px -2px 8px rgba(230,0,18,0.8);
-}
-.p5-card-frame:hover::after {
-  border-color: #fff;
-  box-shadow: 2px 2px 8px rgba(255,222,0,0.8);
+  display: none !important;
+  content: none !important;
 }
 
 /* ==========================================================================
@@ -2267,27 +2261,12 @@ h1, h2, h3 {
    32. PERSONA 5 AUTHENTIC BACK BUTTON & CONTROLLER HUD
    ========================================================================== */
 
-/* Authentic Persona 5 Back Button */
+/* Authentic Persona 5 Back Button - Disabled per user request */
 .p5-back-btn {
-  position: fixed;
-  bottom: 84px;
-  left: 24px;
-  z-index: 9980;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: #000000;
-  border: 2px solid #E60012;
-  border-left: 6px solid #FFDE00;
-  padding: 0.45rem 1.1rem;
-  color: #FFFFFF;
-  cursor: pointer;
-  transform: skewX(-12deg);
-  box-shadow: -4px 4px 0px #000000, 0 0 16px rgba(230, 0, 18, 0.45);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.22s ease, transform 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.18s, box-shadow 0.18s, border-color 0.18s;
-  will-change: transform, opacity;
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
 }
 
 .p5-back-btn:hover {

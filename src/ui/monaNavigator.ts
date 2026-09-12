@@ -12,6 +12,7 @@
  */
 
 import { p5rAudio } from '../audio/p5rAudio';
+import { p5CriticalSpark } from '../utils/p5Confetti';
 
 export interface MonaNavigator {
   init(): void;
@@ -23,24 +24,17 @@ export interface MonaNavigator {
 }
 
 const TAB_MESSAGES: Record<string, string> = {
-  'tab-profile': "Looking cool, Joker! Level 99 Game Systems Architect with zero memory leaks!",
-  'tab-skills': "Check out those combat parameters! ST: 98 and AG: 99... unstoppable in C++ and shaders!",
-  'tab-projects': "Four Palace contracts infiltrated! Let's examine the target architectures and steal their heart!",
-  'tab-experience': "Rank 10 MAX Judgement with Sae! Your network of industry allies is formidable!",
-  'tab-contact': "Time to dispatch the Calling Card, Joker! Let's steal their studio project offer!"
+  'tab-profile': "Looking cool, Joker! Lead Unity Developer & 3D Technical Artist profile ready!",
+  'tab-skills': "Check out those combat parameters! ST: 98 in Unity C# and AG: 99 in Blender Rigging... unstoppable synergy!",
+  'tab-experience': "Rank 10 MAX Judgement with Sae! Your Unity & Blender production track record is formidable!"
 };
 
 const RANDOM_TIPS: string[] = [
-  "Press [1-5] on your keyboard to instantly warp between Metaverse sectors!",
-  "Type [/] anytime to open the Metaverse Command Palette with all quick tools!",
-  "Press [S] to schedule a direct studio interview or engine briefing with Joker!",
-  "Press [B] to test Daffa's live 120 FPS in-browser particle physics engine!",
-  "Press [G] to challenge Joker with Sae's technical interrogation challenges!",
-  "Press [T] to review Daffa's proven studio teamwork & Baton Pass code reviews!",
-  "Press [L] to study the C++20 and shader guides in the Knowledge Codex!",
-  "Press [O] to trigger the 120 FPS Palace Overclock Boost Mode!",
-  "Press [ESC] to quickly dismiss active modals and return through tabs!",
-  "Looking for the Field Manual? Click the bottom prompt bar or press [?]!"
+  "Press [1-3] on your keyboard to instantly jump between sectors!",
+  "Press [◄ / ►] or [A / D] to cycle command ribbons smoothly!",
+  "Press [▲ / ▼] or [W / S] to explore the portfolio vertically!",
+  "Press [T] to unleash Showtime All-Out Attack!",
+  "Press [ESC] to quickly dismiss active modals and return through tabs!"
 ];
 
 class MonaNavigatorImpl implements MonaNavigator {
@@ -109,6 +103,7 @@ class MonaNavigatorImpl implements MonaNavigator {
     if (avatarBtn) {
       avatarBtn.addEventListener('click', () => {
         p5rAudio.playMenuNavigate();
+        p5CriticalSpark(0.12, 0.88);
         if (this.isMinimized) {
           this.setMinimized(false);
         } else {

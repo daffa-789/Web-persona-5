@@ -130,10 +130,10 @@ export class P5RAudioEngineImpl implements P5RAudioEngine {
   private isBgmPlayingState: boolean = false;
   private autoplayUnlocked: boolean = false;
 
-  // Volume Defaults
-  private masterVolume: number = 0.85;
-  private sfxVolume: number = 0.80;
-  private bgmVolume: number = 0.35;
+  // Volume Defaults (P5R High-Fidelity Punch)
+  private masterVolume: number = 1.0;
+  private sfxVolume: number = 1.0;
+  private bgmVolume: number = 0.50;
 
   constructor() {
     this.setupAutoplayUnlock();
@@ -141,9 +141,9 @@ export class P5RAudioEngineImpl implements P5RAudioEngine {
 
   /**
    * Initializes the Web Audio API AudioContext and gain routing bus topology:
-   * [Procedural SFX] -> sfxGain (0.80) --+
-   *                                      +-> masterGain (0.85) -> compressor -> destination
-   * [BGM Audio / Synth] -> bgmGain (0.35)-+
+   * [Procedural SFX] -> sfxGain (1.00) --+
+   *                                      +-> masterGain (1.00) -> compressor -> destination
+   * [BGM Audio / Synth] -> bgmGain (0.50)-+
    */
   public init(): void {
     if (this.ctx) {
@@ -182,12 +182,12 @@ export class P5RAudioEngineImpl implements P5RAudioEngine {
       this.masterGain.gain.setValueAtTime(initialGain, this.ctx.currentTime);
       this.masterGain.connect(this.compressor);
 
-      // 3. SFX Sub-bus Gain Node (0.80) -> Master Gain
+      // 3. SFX Sub-bus Gain Node (1.00) -> Master Gain
       this.sfxGain = this.ctx.createGain();
       this.sfxGain.gain.setValueAtTime(this.sfxVolume, this.ctx.currentTime);
       this.sfxGain.connect(this.masterGain);
 
-      // 4. BGM Sub-bus Gain Node (0.35) -> Master Gain
+      // 4. BGM Sub-bus Gain Node (0.50) -> Master Gain
       this.bgmGain = this.ctx.createGain();
       this.bgmGain.gain.setValueAtTime(this.bgmVolume, this.ctx.currentTime);
       this.bgmGain.connect(this.masterGain);
@@ -283,7 +283,7 @@ export class P5RAudioEngineImpl implements P5RAudioEngine {
       try {
         await this.ctx.resume();
       } catch (err) {
-        console.warn('[P5RAudio] Failed to resume AudioContext:', err);
+        // Will resume on interaction
       }
     }
   }
@@ -295,9 +295,9 @@ export class P5RAudioEngineImpl implements P5RAudioEngine {
     if (typeof window === 'undefined') return;
 
     const unlock = async () => {
+      await this.ensureContext();
       if (this.autoplayUnlocked) return;
       this.autoplayUnlocked = true;
-      await this.ensureContext();
 
       // If user toggled BGM prior to user gesture, resume it now
       if (this.isBgmPlayingState && this.bgmAudio && this.bgmAudio.paused) {
@@ -310,12 +310,14 @@ export class P5RAudioEngineImpl implements P5RAudioEngine {
       window.removeEventListener('keydown', unlock);
       window.removeEventListener('touchstart', unlock);
       window.removeEventListener('pointerdown', unlock);
+      window.removeEventListener('pointermove', unlock);
     };
 
     window.addEventListener('click', unlock, { passive: true });
     window.addEventListener('keydown', unlock, { passive: true });
     window.addEventListener('touchstart', unlock, { passive: true });
     window.addEventListener('pointerdown', unlock, { passive: true });
+    window.addEventListener('pointermove', unlock, { once: true, passive: true });
   }
 
   /**
@@ -465,10 +467,6 @@ export class P5RAudioEngineImpl implements P5RAudioEngine {
 
   public playKnifeSlashSynth(): void {
     if (this.isMutedState) return;
-    if (this.activeHoverAudio && !this.activeHoverAudio.paused) {
-      this.activeHoverAudio.pause();
-      this.activeHoverAudio.currentTime = 0;
-    }
     this.ensureContext().catch(() => {});
     if (!this.ctx || !this.sfxGain) return;
 
@@ -559,10 +557,6 @@ export class P5RAudioEngineImpl implements P5RAudioEngine {
 
   public playAllOutAttackSynth(): void {
     if (this.isMutedState) return;
-    if (this.activeHoverAudio && !this.activeHoverAudio.paused) {
-      this.activeHoverAudio.pause();
-      this.activeHoverAudio.currentTime = 0;
-    }
     this.ensureContext().catch(() => {});
     if (!this.ctx || !this.sfxGain) return;
 
@@ -712,82 +706,52 @@ export class P5RAudioEngineImpl implements P5RAudioEngine {
     osc2b.stop(t2 + 0.18);
   }
 
-  // ── Non-colliding Audio Channels & Cache ──
-  private sfxAudioCache: Map<string, HTMLAudioElement> = new Map();
-  private activeHoverAudio: HTMLAudioElement | null = null;
-  private activeActionAudio: HTMLAudioElement | null = null;
+  // ── High-Fidelity Non-Colliding Audio Channels ──
   private lastNavTime = 0;
-  private readonly navThrottleMs = 120; // Prevents hover sound stacking
+  private readonly navThrottleMs = 70; // Snappy tactile hover response
 
-  private getCachedAudio(url: string): HTMLAudioElement {
-    let audio = this.sfxAudioCache.get(url);
-    if (!audio) {
-      audio = new Audio(url);
-      audio.preload = 'auto';
-      this.sfxAudioCache.set(url, audio);
+  /**
+   * Universal SFX Player: Creates independent audio instances with automatic Web Audio fallback.
+   * Eliminates promise interruption bugs and allows rapid crisp clicks without truncation.
+   */
+  private playSound(url: string, fallback: () => void, isAction: boolean = false): void {
+    if (this.isMutedState) return;
+    this.ensureContext().catch(() => {});
+
+    try {
+      const audio = new Audio(url);
+      const vol = isAction
+        ? Math.max(0, Math.min(1, this.masterVolume * this.sfxVolume))
+        : Math.max(0, Math.min(1, this.masterVolume * this.sfxVolume * 0.9));
+      audio.volume = vol;
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          fallback();
+        });
+      }
+    } catch {
+      fallback();
     }
-    return audio;
   }
 
   /**
-   * Hover Channel: Strictly throttled and interrupts previous hover sound
-   * to prevent rapid mouse movements from causing audio collision / cacophony.
+   * Hover Channel: Throttled to 70ms to ensure tactile mechanical feedback.
    */
   private playHoverChannel(url: string, fallback: () => void): void {
     if (this.isMutedState) return;
     const now = Date.now();
     if (now - this.lastNavTime < this.navThrottleMs) return;
     this.lastNavTime = now;
-
-    try {
-      // Protection: If an action sound is currently in its initial attack phase (<200ms),
-      // suppress hover sound so fast mouse sweeps don't muddle fresh action impacts
-      if (this.activeActionAudio && !this.activeActionAudio.paused && this.activeActionAudio.currentTime < 0.20) {
-        return;
-      }
-      if (this.activeHoverAudio && !this.activeHoverAudio.paused) {
-        this.activeHoverAudio.pause();
-        this.activeHoverAudio.currentTime = 0;
-      }
-      const audio = this.getCachedAudio(url);
-      audio.volume = Math.max(0, Math.min(1, this.masterVolume * this.sfxVolume * 0.7));
-      audio.currentTime = 0;
-      this.activeHoverAudio = audio;
-      const p = audio.play();
-      if (p !== undefined) {
-        p.catch(() => fallback());
-      }
-    } catch {
-      fallback();
-    }
+    this.playSound(url, fallback, false);
   }
 
   /**
-   * Action Channel: Interrupts prior action audio to ensure crisp single-hit feedback.
+   * Action Channel: Crisp full-volume trigger for confirms, cancels, and attacks.
    */
   private playActionChannel(url: string, fallback: () => void): void {
     if (this.isMutedState) return;
-    try {
-      if (this.activeActionAudio && !this.activeActionAudio.paused) {
-        this.activeActionAudio.pause();
-        this.activeActionAudio.currentTime = 0;
-      }
-      // CRITICAL COLLISION FIX: Immediately silence active hover audio so hover tick/gun cock never bleeds into action
-      if (this.activeHoverAudio && !this.activeHoverAudio.paused) {
-        this.activeHoverAudio.pause();
-        this.activeHoverAudio.currentTime = 0;
-      }
-      const audio = this.getCachedAudio(url);
-      audio.volume = Math.max(0, Math.min(1, this.masterVolume * this.sfxVolume));
-      audio.currentTime = 0;
-      this.activeActionAudio = audio;
-      const p = audio.play();
-      if (p !== undefined) {
-        p.catch(() => fallback());
-      }
-    } catch {
-      fallback();
-    }
+    this.playSound(url, fallback, true);
   }
 
   public playMenuSelect(): void {

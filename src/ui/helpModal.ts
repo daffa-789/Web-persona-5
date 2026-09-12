@@ -63,12 +63,10 @@ class HelpModalControllerImpl implements HelpModalController {
                 <span class="p5-keycap">1</span>
                 <span class="p5-keycap">2</span>
                 <span class="p5-keycap">3</span>
-                <span class="p5-keycap">4</span>
-                <span class="p5-keycap">5</span>
               </div>
               <div class="key-desc">
                 <strong>SECTOR DIRECT TELEPORT</strong>
-                <span>Jump directly to Dossier, Skills, Heists, Confidants, or Calling Card</span>
+                <span>Jump directly to Profile, Skills, or Confidants</span>
               </div>
             </div>
 

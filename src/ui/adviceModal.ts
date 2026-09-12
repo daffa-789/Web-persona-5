@@ -26,53 +26,53 @@ export const STRATEGIC_ADVICE: AdviceItem[] = [
   {
     id: 'social-beacon',
     tag: '01. DEVELOPER BEACON // SOCIALS',
-    title: 'Setup Profil Publik: GitHub, Itch.io & LinkedIn Bertema Game Dev',
+    title: 'Setup Profil Publik: GitHub, Itch.io & ArtStation (Unity & Blender)',
     subtitle: 'Saat ini semua link diset kosongan (offline). Berikut roadmap saat Daffa siap meluncurkannya:',
-    recommendation: 'Recruiter game AAA mencari 3 pilar: Kode Bersih (GitHub), Bukti Game Bisa Dimainkan (Itch.io), dan Rekam Jejak Profesional (LinkedIn). Jangan biarkan profil kosong terlalu lama saat melamar kerja.',
+    recommendation: 'Recruiter game studio mencari 3 pilar: Kode Bersih Unity C# (GitHub), Bukti Game Bisa Dimainkan (Itch.io WebGL), dan Portofolio Model 3D Stylized (ArtStation). Tampilkan perpaduan programming dan 3D art yang solid.',
     actionItems: [
-      'GitHub: Pinned 2-3 repo inti C++20 / Unreal Engine 5 dengan README visual kaya GIF/Video gameplay, diagram arsitektur memory, dan benchmark profiling.',
-      'Itch.io: Upload 1-2 prototype game playable langsung di browser via HTML5 / WebGL export. Recruiter lebih suka klik 1 detik daripada download zip .exe yang discan antivirus.',
-      'LinkedIn: Gunakan headline tajam: "Lead Gameplay & Engine Systems Engineer | C++20, UE5, HLSL Compute, 120 FPS Profiling".',
-      'ArtStation: Jika membuat custom shader, PBR materials, atau VFX Niagara, pajang screenshot RenderDoc & video breakdown material nodes.'
+      'GitHub: Pinned 2-3 repo inti Unity 3D / C# dengan README visual kaya GIF gameplay, diagram arsitektur State Machine, dan zero-GC allocation benchmark.',
+      'Itch.io: Upload 1-2 prototype game playable langsung di browser via Unity WebGL export. Recruiter lebih suka klik 1 detik daripada download zip .exe.',
+      'LinkedIn: Gunakan headline tajam: "Lead Unity Developer & 3D Technical Artist | C# Gameplay, Blender Modeling, URP Shaders".',
+      'ArtStation: Pajang model 3D Blender (wireframe quad topology, texture maps PBR, dan turntable render) untuk membuktikan kemampuan asset pipeline.'
     ],
     impactLevel: 'CRITICAL'
   },
   {
     id: 'web-showcase',
     tag: '02. PLAYABLE TECH PROTOTYPE',
-    title: 'Integrasi WebGL / WebGPU WASM Live Playable Demos',
-    subtitle: 'Maksimalkan fitur /browser yang sudah kita sediakan dengan build game riil:',
-    recommendation: 'Porting potongan prototype sistem (misal: 10,000 particle compute simulation atau boids flocking) ke WebAssembly via Emscripten atau WebGPU. Ini membuktikan Daffa tidak hanya mengerti teori, tapi bisa mengeksekusi engine logic langsung di tangan pengunjung.',
+    title: 'Integrasi Unity WebGL Live Playable Demos',
+    subtitle: 'Maksimalkan fitur live demo dengan build Unity WebGL riil:',
+    recommendation: 'Porting potongan prototype gameplay (misal: 3D character controller, combat combo system, atau particle VFX) langsung ke Unity WebGL. Ini membuktikan Daffa bisa memadukan modeling Blender dan programming Unity secara langsung di browser.',
     actionItems: [
-      'Ekspor demo C++ ECS ke WebAssembly menggunakan raylib / Emscripten.',
-      'Sematkan canvas WebGL langsung ke modal Heists atau /browser sandbox.',
-      'Sertakan live telemetry (FPS graph, draw call counter, dynamic entity count) agar recruiter teknis terkesan.'
+      'Ekspor demo Unity C# ke WebGL dengan kompresi Brotli/Gzip optimal.',
+      'Sematkan canvas WebGL langsung ke tab portofolio atau modal showcase.',
+      'Sertakan live telemetry (FPS counter, draw call counter, batching metrics) agar recruiter teknis terkesan.'
     ],
     impactLevel: 'HIGH-PRIORITY'
   },
   {
-    id: 'calling-card-webhook',
-    tag: '03. REAL-TIME CONTACT PIPELINE',
-    title: 'Hubungkan Calling Card Form ke Discord / Formspree Webhook',
-    subtitle: 'Jadikan formulir kontak interaktif mengirim pesan riil ke HP/Discord Daffa:',
-    recommendation: 'Formulir Calling Card (#tactics-contact-form) saat ini sudah memiliki validasi dan animasi All-Out Attack yang sangat keren. Tambahkan 1 URL endpoint Formspree atau Discord Webhook agar pesan recruiter langsung masuk ke Discord server pribadi Daffa secara gratis.',
+    id: 'contact-pipeline',
+    tag: '03. DIRECT DISPATCH // RECRUITER CONTACT',
+    title: 'Hubungkan Direct Email Dispatch & Social Beacon',
+    subtitle: 'Permudah recruiter studio game menghubungi Daffa secara instan:',
+    recommendation: 'Recruiter game dev menyukai akses cepat 1-klik untuk menghubungi kandidat. Siapkan email langsung atau mailto dispatch di social beacon agar pesan lowongan dan tawaran kontrak bisa langsung diterima Daffa.',
     actionItems: [
-      'Daftar akun gratis di formspree.io atau buat Webhook channel di Discord pribadi.',
-      'Di src/ui/callingCard.ts, lakukan fetch POST payload JSON { name, email, message } ke URL webhook.',
-      'Daffa akan langsung menerima notifikasi push instan di HP begitu recruiter Atlus/Sony/Indie mengirim Calling Card!'
+      'Gunakan email profesional khusus game development (misal: contact@daffadev.com atau daffa.joker.dev@gmail.com).',
+      'Tautkan akun LinkedIn, GitHub, dan ArtStation aktif di grid Confidant Repositories.',
+      'Daffa akan menerima penawaran interview langsung dari studio game AAA maupun indie ternama!'
     ],
     impactLevel: 'HIGH-PRIORITY'
   },
   {
     id: 'profiling-proof',
-    tag: '04. PROFILING & BENCHMARKING VIDEO',
-    title: 'Sertakan Bukti Video Profiling Superluminal / Unreal Insights',
-    subtitle: 'Ubah klaim 120 FPS menjadi fakta teknis yang tak terbantahkan:',
-    recommendation: 'Semua programmer bisa mengaku bisa 120 FPS, namun Lead Systems Engineer yang kredibel menyertakan visual CPU/GPU trace budget (<8.33ms) di bawah beban stress test ribuan aktor.',
+    tag: '04. PROFILING & RETOPOLOGY SHOWCASE',
+    title: 'Sertakan Bukti Video Unity Profiler & Blender Wireframe',
+    subtitle: 'Ubah klaim kemampuan teknis menjadi bukti visual konkret:',
+    recommendation: 'Lead Unity Developer & Technical Artist yang kredibel menyertakan visual frame time profiling (<16.6ms / 60 FPS) dan wireframe topology yang rapi tanpa non-manifold geometry.',
     actionItems: [
-      'Rekam clip 30-45 detik Unreal Insights / Tracy Profiler yang menunjukkan frame time 8.3ms stabil tanpa GC stall.',
-      'Tampilkan visual CPU thread worker graph yang mendistribusikan physics & animation evaluation.',
-      'Tautkan video YouTube unlisted atau video pendek di modal heist project.'
+      'Rekam clip 30-45 detik Unity Profiler yang menunjukkan frame rate 60 FPS stabil tanpa Garbage Collection stall.',
+      'Tampilkan visual Blender wireframe turntable yang memperlihatkan edge flow dan topology quad yang rapi.',
+      'Tautkan video YouTube unlisted atau showcase visual di repository GitHub & ArtStation.'
     ],
     impactLevel: 'CRITICAL'
   },
