@@ -10,7 +10,7 @@
  * ==========================================================================
  */
 
-import { p5rAudio } from '../audio/p5rAudio';
+import { p5rTransitions } from '../transitions/transitions';
 
 export interface HelpModalController {
   init(): void;
@@ -200,23 +200,31 @@ class HelpModalControllerImpl implements HelpModalController {
 
   public open(): void {
     if (!this.overlayEl || this.isModalOpen) return;
-    p5rAudio.playGunCock();
-    this.overlayEl.classList.remove('hidden');
-    void this.overlayEl.offsetWidth; // Force reflow
-    this.overlayEl.classList.add('visible');
     this.isModalOpen = true;
+    // SHUTTER-BLACKOUT: the dialog is mounted under the 60ms black frame, so
+    // the backdrop never fades in, and its rows land 40ms apart.
+    void p5rTransitions.shutterBlackout({
+      host: this.overlayEl,
+      audio: 'menu_open',
+      staggerSelector: '.manual-grid > *, .manual-footer',
+      onCovered: () => {
+        if (!this.overlayEl) return;
+        this.overlayEl.classList.remove('hidden');
+        void this.overlayEl.offsetWidth;
+        this.overlayEl.classList.add('visible');
+      }
+    });
   }
 
   public close(): void {
     if (!this.overlayEl || !this.isModalOpen) return;
-    p5rAudio.playMenuBack();
-    this.overlayEl.classList.remove('visible');
-    setTimeout(() => {
-      if (!this.isModalOpen && this.overlayEl) {
-        this.overlayEl.classList.add('hidden');
-      }
-    }, 250);
     this.isModalOpen = false;
+    void p5rTransitions.kineticExit({
+      host: this.overlayEl,
+      audio: 'menu_back',
+      onCovered: () => this.overlayEl?.classList.add('hidden')
+    });
+    this.overlayEl.classList.remove('visible');
   }
 
   public isOpen(): boolean {

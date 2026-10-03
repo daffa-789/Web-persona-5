@@ -23,6 +23,7 @@ import { p5rTransitions } from './transitions/transitions';
 import { runEntrance } from './ui/entrance';
 import { monaNavigator } from './ui/monaNavigator';
 import { adviceModalController } from './ui/adviceModal';
+import { helpModalController } from './ui/helpModal';
 import {
   renderAppShell,
   renderAll,
@@ -82,38 +83,51 @@ function initAllOutAttack(): void {
   const closeBtn = document.getElementById('aoa-close-btn');
   const theurgyBtn = document.getElementById('btn-trigger-theurgy-main');
 
-  const openAoa = (speakerText?: string) => {
-    if (!overlay || overlay.classList.contains('active')) return;
-    // Trigger flash first
-    triggerAoaFlash();
-    // Then show overlay and trigger dramatic AOA initiation sound
-    setTimeout(() => {
-      p5rAudio.playAoaStart();
-      overlay.classList.add('active');
-      if (speakerText) {
-        const speakerEl = document.getElementById('aoa-speaker');
-        if (speakerEl) speakerEl.textContent = speakerText;
-      }
-    }, 180);
-  };
-
-  const closeAoa = () => {
-    if (!overlay || !overlay.classList.contains('active')) return;
-    p5rAudio.playAoaFinish();
-    p5VictoryShower();
-    overlay.classList.remove('active');
-    // Reset aoa-close-btn animation so it re-triggers next open
+  const resetFinisher = (): void => {
     const btn = document.getElementById('aoa-close-btn');
     if (btn) {
       btn.style.animation = 'none';
       void btn.offsetWidth;
       btn.style.animation = '';
     }
-    // Reset title chars
     const titleEl = document.getElementById('aoa-title-main');
     if (titleEl) titleEl.textContent = 'THE CODE IS EXECUTED!';
     const speakerEl = document.getElementById('aoa-speaker');
     if (speakerEl) speakerEl.textContent = '"I\'VE BEEN WAITING FOR THIS! — DAFFA // JOKER"';
+  };
+
+  const openAoa = (speakerText?: string): void => {
+    if (!overlay || overlay.classList.contains('active')) return;
+    void p5rTransitions.shutterBlackout({
+      host: overlay,
+      audio: 'aoa_start',
+      staggerSelector: '.aoa-splash-content > *, #aoa-close-btn',
+      onCovered: () => {
+        overlay.classList.add('active');
+        triggerAoaFlash();
+        if (speakerText) {
+          const speakerEl = document.getElementById('aoa-speaker');
+          if (speakerEl) speakerEl.textContent = speakerText;
+        }
+      }
+    });
+  };
+
+  const closeAoa = (): void => {
+    if (!overlay || !overlay.classList.contains('active')) return;
+    // The finisher's confetti is the payoff, so this one exit opts out of the
+    // variant's default confetti suppression instead of cancelling it mid-air.
+    p5VictoryShower();
+    void p5rTransitions.kineticExit({
+      host: overlay,
+      audio: 'aoa_finish',
+      suppressConfetti: false,
+      onCovered: () => {
+        overlay.classList.remove('active');
+        resetFinisher();
+      }
+    });
+    resetFinisher();
   };
 
   if (theurgyBtn) {
@@ -122,6 +136,15 @@ function initAllOutAttack(): void {
   if (closeBtn) {
     closeBtn.addEventListener('click', closeAoa);
   }
+
+  window.addEventListener('keydown', (event) => {
+    const tag = document.activeElement?.tagName?.toLowerCase();
+    if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+    if (event.key.toLowerCase() === 't') {
+      event.preventDefault();
+      openAoa();
+    }
+  });
 
   // Expose openAoa globally
   (window as unknown as Record<string, unknown>)._p5rOpenAoa = openAoa;
@@ -266,10 +289,14 @@ function bootstrap(): void {
   // 7. Strategic Career Advice Modal (/advice, /sarannya)
   adviceModalController.init();
 
+  // 8. Field Manual (? / H) — must run after navigation so the controller HUD
+  //    it binds to already exists.
+  helpModalController.init();
+
   // 9. Post-render: upgrade social links
   upgradeSocialLinks();
 
-  // 10. Run entrance cinematic smoothly on top
+  // 10. Entrance cinematic owns the viewport until it hands back to the shell
   runEntrance().then(() => {
     animateVitalBars();
     console.log('[P5R] Persona 5 Royal Game Developer Portfolio — ALL SYSTEMS ACTIVE.');

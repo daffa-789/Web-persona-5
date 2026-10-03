@@ -23,12 +23,26 @@
  * ==========================================================================
  */
 
+/** Two non-overlapping SFX buses, per workspace guideline 5. */
+export type SfxChannel = 'hover' | 'action';
+
+/** Every motion event the Motion Director can score. All resolve to local .mp3. */
+export type MotionAudioCue =
+  | 'menu_open'
+  | 'menu_navigate'
+  | 'aoa_start'
+  | 'aoa_finish'
+  | 'menu_back';
+
 export interface P5RAudioEngine {
   /** Initialize the AudioContext, routing buses, and compressor */
   init(): void;
 
   /** Ensure AudioContext is instantiated and resumed from suspended state */
   ensureContext(): Promise<void>;
+
+  /** Score a motion event on the correct channel (hover cues self-throttle). */
+  playMotionAudio(cue: MotionAudioCue): void;
 
   /** 1. Gun Cock SFX: 2-stage mechanical double-click on hover */
   playGunCock(): void;
@@ -708,50 +722,100 @@ export class P5RAudioEngineImpl implements P5RAudioEngine {
 
   // ── High-Fidelity Non-Colliding Audio Channels ──
   private lastNavTime = 0;
-  private readonly navThrottleMs = 70; // Snappy tactile hover response
+  private readonly navThrottleMs = 110; // Guideline R6.3: 100–120ms hover cooldown
+  private clips: Record<SfxChannel, HTMLAudioElement | null> = { hover: null, action: null };
+
+  /** Stop whatever this channel is still holding so the next hit lands clean. */
+  private cutChannel(channel: SfxChannel): void {
+    const clip = this.clips[channel];
+    if (!clip) return;
+    this.clips[channel] = null;
+    try {
+      clip.pause();
+      clip.currentTime = 0;
+    } catch {
+      /* already detached */
+    }
+  }
+
+  private clipVolume(channel: SfxChannel): number {
+    const scale = channel === 'hover' ? 0.9 : 1;
+    return Math.max(0, Math.min(1, this.masterVolume * this.sfxVolume * scale));
+  }
 
   /**
-   * Universal SFX Player: Creates independent audio instances with automatic Web Audio fallback.
-   * Eliminates promise interruption bugs and allows rapid crisp clicks without truncation.
+   * Universal SFX player. One live clip per channel: a new trigger cuts the
+   * clip before it, so rapid ribbon sweeps and overlapping slashes never muddy.
+   * Falls back to the procedural synth when autoplay or the file itself fails.
    */
-  private playSound(url: string, fallback: () => void, isAction: boolean = false): void {
+  private playSound(url: string, fallback: () => void, channel: SfxChannel = 'action'): void {
     if (this.isMutedState) return;
     this.ensureContext().catch(() => {});
+    this.cutChannel(channel);
 
     try {
       const audio = new Audio(url);
-      const vol = isAction
-        ? Math.max(0, Math.min(1, this.masterVolume * this.sfxVolume))
-        : Math.max(0, Math.min(1, this.masterVolume * this.sfxVolume * 0.9));
-      audio.volume = vol;
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          fallback();
+      audio.volume = this.clipVolume(channel);
+      this.clips[channel] = audio;
+      audio.addEventListener('ended', () => {
+        if (this.clips[channel] === audio) this.clips[channel] = null;
+      });
+      const started = audio.play();
+      if (started !== undefined) {
+        started.catch(() => {
+          if (this.clips[channel] === audio) {
+            this.clips[channel] = null;
+            fallback();
+          }
         });
       }
     } catch {
+      this.clips[channel] = null;
       fallback();
     }
   }
 
   /**
-   * Hover Channel: Throttled to 70ms to ensure tactile mechanical feedback.
+   * Hover channel: throttled to 110ms and self-cutting for tactile feedback
+   * during fast mouse sweeps.
    */
   private playHoverChannel(url: string, fallback: () => void): void {
     if (this.isMutedState) return;
     const now = Date.now();
     if (now - this.lastNavTime < this.navThrottleMs) return;
     this.lastNavTime = now;
-    this.playSound(url, fallback, false);
+    this.playSound(url, fallback, 'hover');
   }
 
   /**
-   * Action Channel: Crisp full-volume trigger for confirms, cancels, and attacks.
+   * Action channel: full-volume trigger that also clears a hover sound still
+   * in its tail, so confirms, cancels and slashes never double up.
    */
   private playActionChannel(url: string, fallback: () => void): void {
     if (this.isMutedState) return;
-    this.playSound(url, fallback, true);
+    this.cutChannel('hover');
+    this.playSound(url, fallback, 'action');
+  }
+
+  /** Motion Director hook: one named cue per choreography event. */
+  public playMotionAudio(cue: MotionAudioCue): void {
+    switch (cue) {
+      case 'menu_open':
+        this.playMenuOpen();
+        break;
+      case 'menu_navigate':
+        this.playMenuNavigate();
+        break;
+      case 'aoa_start':
+        this.playAoaStart();
+        break;
+      case 'aoa_finish':
+        this.playAoaFinish();
+        break;
+      case 'menu_back':
+        this.playMenuBack();
+        break;
+    }
   }
 
   public playMenuSelect(): void {

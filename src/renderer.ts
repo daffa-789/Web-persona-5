@@ -25,6 +25,9 @@ export function renderAppShell(root: HTMLElement = document.getElementById('app'
   <!-- Comic Halftone Texture Overlay -->
   <div class="p5-halftone-overlay"></div>
 
+  <!-- Film Grain / feTurbulence Texture -->
+  <div class="p5-grain" aria-hidden="true"></div>
+
   <!-- Screen Blackout Shutter Flash for Transitions -->
   <div id="section-blackout"></div>
 
@@ -90,6 +93,17 @@ export function renderAppShell(root: HTMLElement = document.getElementById('app'
             <span class="num-badge">03</span>
             <span>CONFIDANTS</span>
           </div>
+        </button>
+
+        <button
+          class="p5-aoa-trigger"
+          id="btn-trigger-theurgy-main"
+          type="button"
+          title="Unleash All-Out Attack [T]"
+        >
+          <img class="p5-aoa-pip" src="/images/p5r/ui/p5-pointer-asterisk.svg" alt="" />
+          <span class="aoa-trigger-label">SHOWTIME</span>
+          <span class="aoa-trigger-key">T</span>
         </button>
       </div>
     </nav>
@@ -325,15 +339,6 @@ export function renderAppShell(root: HTMLElement = document.getElementById('app'
       </section>
 
     </main>
-
-    <!-- ====================================================================
-         FOOTER
-         ==================================================================== -->
-    <footer class="p3r-footer border-t border-zinc-800 bg-black/95 p-4 text-center lg:pr-80">
-      <div class="max-w-7xl mx-auto flex flex-wrap justify-center items-center gap-4 text-xs font-mono text-zinc-400">
-        <span>${profile.name}</span>
-      </div>
-    </footer>
 
   </div>
 

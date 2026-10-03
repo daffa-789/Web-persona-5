@@ -1,29 +1,24 @@
 /**
  * ==========================================================================
- * PERSONA 5 ROYAL (P5R) - SLANTED RADIAL COMMAND WHEEL NAVIGATION SYSTEM
+ * PERSONA 5 ROYAL (P5R) - SLANTED COMMAND RIBBON NAVIGATION
  * File: src/ui/navigation.ts
  *
- * Controls the authentic P5R slanted command ribbons:
- *  - 5 Tabs: DOSSIER, SKILLS, HEISTS, CONFIDANTS, CALLING CARD
- *  - Slanted Geometry: skewX(-12deg) rotate(-8deg) with unskewed inner text
- *  - Dynamic Full Joker Silhouette Cutout: filter drop-shadow(-12px 12px 0px #E60012),
- *    reactive tab stances, kinetic twitch on switch, and desktop mouse parallax
- *  - Hover Microinteractions: translateX(24px) pop-out, crimson highlight,
- *    procedural playGunCock() on hover, procedural playKnifeSlash() on click,
- *    and dynamic Joker eye-flare cut-in banner (joker_minigame_cutin.png)
- *  - <600ms Execution Budget: deterministic ~280ms transition duration
- *  - Idempotent click rejection on active tab
- *  - Debounce & transition locks (isTransitioning protection against rapid clicks)
- *  - Pointer events isolation during transitions to prevent inconsistent hover states
- *  - Full keyboard accessibility: 1-5, Arrow keys (wrapping), Home/End, Enter/Space
- *  - Complete WAI-ARIA tab semantics: role="tablist", role="tab", aria-selected, aria-controls
- *  - Decoupled from looping BGM (never pauses, stops, or re-initializes audio player)
- *  - Mobile drawer responsiveness for <=768px and 375px viewports
+ * Owns the ribbon tabs, the Joker stance/parallax, the eye-flare cut-in and
+ * the dismissal hierarchy. All motion is delegated to the Motion Director:
+ *
+ *  - tab switch          SLASH-CUT  (director.switchTab)
+ *  - keyboard step       1-step ribbon snap + throttled menu_navigate
+ *  - active tab marker   gold slash mark through the ribbon, never underline
+ *  - ESC / Backspace     KINETIC-EXIT through the modal hierarchy
+ *
+ * Invariants kept: skewX(-12deg) rotate(-8deg) geometry, unskewed inner text,
+ * translateX(18px) hover with the extended hit-area buffer, WAAPI stance pulse,
+ * ARIA tablist semantics, hash routing, decoupling from the looping BGM.
  * ==========================================================================
  */
 
 import { p5rAudio } from '../audio/p5rAudio';
-import { p5rTransitions } from '../transitions/transitions';
+import { MOTION, p5rTransitions, prefersReducedMotion, type P5RTransitionType } from '../transitions/transitions';
 import { helpModalController } from './helpModal';
 import { adviceModalController } from './adviceModal';
 
@@ -42,8 +37,9 @@ export interface TabConfig {
 
 export interface NavigationController {
   init(): void;
-  setActiveTab(tabId: string, options?: { playAudio?: boolean }): Promise<void>;
+  setActiveTab(tabId: string, options?: { playAudio?: boolean; variant?: P5RTransitionType }): Promise<void>;
   getActiveTabId(): string;
+  goBack(): void;
   destroy(): void;
 }
 
@@ -69,7 +65,7 @@ export const P5R_TABS: TabConfig[] = [
     caption: 'PERSONA RADAR // ELEMENTAL AFFINITY ANALYSIS',
     jokerStance: {
       transform: 'translateX(-10px) translateY(-12px) scale(1.02) rotate(-1.5deg)',
-      shadow: 'drop-shadow(-16px 16px 0px #E60012) drop-shadow(0 0 20px rgba(230,0,18,0.4))',
+      shadow: 'drop-shadow(-16px 16px 0px #E60012)',
     },
   },
   {
@@ -86,7 +82,17 @@ export const P5R_TABS: TabConfig[] = [
   },
 ];
 
-export class P5RNavigationController implements NavigationController {
+/** Injected as markup so the slash mark can sit behind the label without a stacking-context fight. */
+const SLASH_MARKUP = '<span class="p5-tab-slash" aria-hidden="true"></span>';
+
+const BACK_MARKUP = `
+  <span class="p5-back-face">
+    <img class="p5-back-icon" src="/images/p5r/ui/p5-chevron-tip.svg" alt="" />
+    <span class="p5-back-label">BACK</span>
+    <span class="p5-back-key">ESC</span>
+  </span>`;
+
+export class P5RNavigationController {
   private tabButtons: HTMLElement[] = [];
   private tabPanes: HTMLElement[] = [];
   private activeTabId: string = 'tab-profile';
@@ -102,6 +108,11 @@ export class P5RNavigationController implements NavigationController {
   private rafId: number | null = null;
   private tabHistory: string[] = ['tab-profile'];
   private controllerHelper: HTMLElement | null = null;
+  private backButton: HTMLElement | null = null;
+  private isInitialized: boolean = false;
+  /** Elements whose listeners are already installed (init runs more than once). */
+  private readonly bound = new WeakSet<Element>();
+  private hashListener: (() => void) | null = null;
 
   constructor() {
     if (typeof document !== 'undefined') {
@@ -113,8 +124,6 @@ export class P5RNavigationController implements NavigationController {
     }
   }
 
-  private isInitialized: boolean = false;
-
   public init(forceRequery: boolean = false): void {
     if (typeof document === 'undefined') return;
     if (this.isInitialized && !forceRequery && this.tabButtons.length > 0) return;
@@ -123,11 +132,13 @@ export class P5RNavigationController implements NavigationController {
     if (this.tabButtons.length === 0) {
       return;
     }
+    if (this.isInitialized) this.unbindListeners();
     this.isInitialized = true;
 
-    this.injectNavigationStyles();
+    this.decorateRibbons();
     this.ensureCutinBanner();
     this.ensureControllerHelper();
+    this.ensureBackButton();
     this.bindMouseEvents();
     this.bindKeyboardShortcuts();
     this.bindJokerParallax();
@@ -137,171 +148,29 @@ export class P5RNavigationController implements NavigationController {
     this.bindUrlHashRouting();
   }
 
-  /**
-   * Discovers and binds DOM elements
-   */
+  /** Discovers and binds DOM elements */
   private queryElements(): void {
     this.tabButtons = Array.from(
       document.querySelectorAll<HTMLElement>('.p5-ribbon-btn, .p3r-ribbon-btn, [data-tab]')
     );
-    this.tabPanes = Array.from(
-      document.querySelectorAll<HTMLElement>('.tab-pane')
-    );
+    this.tabPanes = Array.from(document.querySelectorAll<HTMLElement>('.tab-pane'));
     this.jokerElement = document.getElementById('joker-silhouette');
     this.navWheelContainer = document.querySelector('.p5r-nav-section, #p5r-nav-wheel');
     this.mobileNavToggle = document.getElementById('btn-mobile-nav');
   }
 
   /**
-   * Injects dynamic CSS rules for the Slanted Radial Wheel, Joker Stances, and Cut-In Banner
+   * Adds the gold slash mark that marks the active tab. An underline is not a
+   * Persona 5 affordance: the marker has to cut *through* the ribbon.
    */
-  private injectNavigationStyles(): void {
-    if (document.getElementById('p5r-nav-wheel-styles')) return;
-
-    const style = document.createElement('style');
-    style.id = 'p5r-nav-wheel-styles';
-    style.textContent = `
-      /* ── P5R Slanted Ribbon Buttons & Hover Microinteractions ── */
-      .p5-ribbon-btn, .p3r-ribbon-btn {
-        position: relative;
-        transform: skewX(-12deg) rotate(-8deg);
-        transition: transform 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-                    background-color 0.2s ease,
-                    border-color 0.2s ease,
-                    box-shadow 0.2s ease;
-        will-change: transform;
-      }
-      /* Expand hit-area to the left so translateX never slips out from under mouse */
-      .p5-ribbon-btn::before, .p3r-ribbon-btn::before {
-        content: '';
-        position: absolute;
-        inset: -6px -12px -6px -32px;
-        pointer-events: auto;
-        z-index: -1;
-      }
-      .p5-ribbon-btn .inner-text, .p3r-ribbon-btn .inner-text {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        transform: skewX(12deg) rotate(8deg);
-      }
-      .p5-ribbon-btn:hover, .p3r-ribbon-btn:hover {
-        transform: skewX(-12deg) rotate(-8deg) translateX(18px) !important;
-        background-color: #E60012 !important;
-        border-color: #FFFFFF !important;
-        color: #FFFFFF !important;
-        box-shadow: 0 0 25px rgba(230, 0, 18, 0.85), -6px 6px 0px #000000 !important;
-      }
-      .p5-ribbon-btn:focus-visible, .p3r-ribbon-btn:focus-visible {
-        outline: 3px solid #FFDE00 !important;
-        outline-offset: 4px !important;
-      }
-      .p5-ribbon-btn.active, .p3r-ribbon-btn.active {
-        transform: skewX(-12deg) rotate(-8deg) translateX(14px) !important;
-        background-color: #E60012 !important;
-        border-color: #FFDE00 !important;
-        border-left-color: #FFDE00 !important;
-        color: #FFFFFF !important;
-        box-shadow: 0 0 28px rgba(255, 222, 0, 0.7), -6px 6px 0px #000000 !important;
-      }
-
-      /* ── Joker Silhouette Cutout with Crimson Chromatic Drop Shadow ── */
-      #joker-silhouette, .joker-silhouette {
-        filter: drop-shadow(-12px 12px 0px #E60012);
-        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.4s ease;
-        transform-origin: bottom right;
-        will-change: transform, filter;
-      }
-
-      /* ── Dynamic Joker Tactical Eye-Flare Cut-In Banner ── */
-      .p5-eye-cutin-banner {
-        position: absolute;
-        top: -64px;
-        left: 50%;
-        transform: translateX(-50%) skewX(-12deg) translateY(10px) scale(0.95);
-        display: flex;
-        align-items: center;
-        gap: 0.8rem;
-        background: #000000;
-        border: 2px solid #E60012;
-        border-bottom: 3px solid #FFDE00;
-        padding: 0.35rem 1.2rem;
-        box-shadow: 0 0 25px rgba(230, 0, 18, 0.85), inset 0 0 15px rgba(255, 222, 0, 0.25);
-        opacity: 0;
-        pointer-events: none;
-        z-index: 60;
-        transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      }
-      .p5-eye-cutin-banner.cutin-active {
-        opacity: 1;
-        transform: translateX(-50%) skewX(-12deg) translateY(0) scale(1);
-      }
-      .p5-eye-cutin-banner .cutin-img-box {
-        height: 38px;
-        width: 44px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(230, 0, 18, 0.2);
-        border-right: 2px solid #FFDE00;
-        padding-right: 0.4rem;
-      }
-      .p5-eye-cutin-banner .cutin-img {
-        height: 32px;
-        width: auto;
-        object-fit: contain;
-        filter: drop-shadow(0 0 8px #FFDE00);
-      }
-      .p5-eye-cutin-banner .cutin-telemetry {
-        transform: skewX(12deg);
-        font-family: 'JetBrains Mono', monospace;
-      }
-      .p5-eye-cutin-banner .cutin-tag {
-        font-size: 9px;
-        font-weight: 900;
-        color: #FFDE00;
-        letter-spacing: 0.15em;
-        text-transform: uppercase;
-        display: block;
-      }
-      .p5-eye-cutin-banner .cutin-caption {
-        font-size: 13px;
-        font-weight: 900;
-        font-style: italic;
-        color: #FFFFFF;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-      }
-
-      /* ── Transition Pointer Locking ── */
-      body.transitioning-lock, body.transitioning-lock .p5-ribbon-btn {
-        pointer-events: none !important;
-      }
-
-      /* ── Responsive Mobile Navigation Drawer ── */
-      @media (max-width: 768px) {
-        .p5-eye-cutin-banner {
-          display: none !important;
-        }
-        .p5-ribbon-btn, .p3r-ribbon-btn {
-          transform: skewX(-8deg) rotate(0deg) !important;
-          padding: 0.45rem 0.8rem !important;
-          font-size: 0.75rem !important;
-        }
-        .p5-ribbon-btn .inner-text, .p3r-ribbon-btn .inner-text {
-          transform: skewX(8deg) rotate(0deg) !important;
-        }
-        .p5-ribbon-btn:hover, .p3r-ribbon-btn:hover {
-          transform: skewX(-8deg) translateX(10px) !important;
-        }
-      }
-    `;
-    document.head.appendChild(style);
+  private decorateRibbons(): void {
+    this.tabButtons.forEach((btn) => {
+      if (btn.querySelector('.p5-tab-slash')) return;
+      btn.insertAdjacentHTML('afterbegin', SLASH_MARKUP);
+    });
   }
 
-  /**
-   * Ensures the dynamic eye-flare cut-in banner DOM node exists
-   */
+  /** Ensures the dynamic eye-flare cut-in banner DOM node exists */
   private ensureCutinBanner(): void {
     let banner = document.getElementById('p5-eye-cutin-banner');
     if (!banner) {
@@ -328,86 +197,108 @@ export class P5RNavigationController implements NavigationController {
     this.cutinContainer = banner;
   }
 
-  /**
-   * Binds mouse click and hover microinteractions
-   */
+  /** Injects the authentic Persona 5 Back Button if the shell omitted it */
+  private ensureBackButton(): void {
+    let btn = document.getElementById('p5-back-btn') as HTMLButtonElement | null;
+    if (!btn) {
+      btn = document.createElement('button');
+      btn.id = 'p5-back-btn';
+      btn.type = 'button';
+      btn.className = 'p5-back-btn';
+      btn.setAttribute('aria-label', 'Back');
+      btn.innerHTML = BACK_MARKUP;
+      document.body.appendChild(btn);
+    }
+    if (!this.bound.has(btn)) {
+      this.bound.add(btn);
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.goBack();
+      });
+    }
+    this.backButton = btn;
+  }
+
+  /** Injects the controller prompt strip (also the Field Manual launcher) */
+  private ensureControllerHelper(): void {
+    let helper = document.getElementById('p5-controller-hud');
+    if (!helper) {
+      helper = document.createElement('div');
+      helper.id = 'p5-controller-hud';
+      helper.className = 'p5-controller-hud';
+      helper.setAttribute('role', 'note');
+      helper.innerHTML = `
+        <div class="p5-hud-chip" id="hud-nav-chip"><span class="p5-chip-key">&#9668; &#9658; / &#9650; &#9660;</span><span class="p5-chip-txt">SELECT</span></div>
+        <div class="p5-hud-chip"><span class="p5-chip-key">1 - 3</span><span class="p5-chip-txt">DIRECT</span></div>
+        <div class="p5-hud-chip p5-hud-back-chip"><span class="p5-chip-key red">ESC</span><span class="p5-chip-txt">BACK</span></div>
+      `;
+      document.body.appendChild(helper);
+
+      helper.querySelectorAll<HTMLElement>('.p5-hud-chip').forEach((chip) => {
+        chip.addEventListener('mouseenter', () => p5rAudio.playMenuNavigate());
+      });
+    }
+    this.controllerHelper = helper;
+  }
+
+  /** Binds mouse click and hover microinteractions.
+   *  init() runs from both the constructor and bootstrap's forced requery, so
+   *  every per-element listener is guarded: a double-bound click starts two
+   *  transitions and the second one preempts the first mid-wipe. */
   private bindMouseEvents(): void {
     this.tabButtons.forEach((btn) => {
+      if (this.bound.has(btn)) return;
+      this.bound.add(btn);
+
       const tabId = btn.getAttribute('data-tab') || '';
       const tabConfig = P5R_TABS.find((t) => t.id === tabId);
 
-      // Hover microinteraction: Play snappy menu navigate SFX and display eye-flare cut-in
       btn.addEventListener('mouseenter', () => {
         if (this.isTransitioning) return;
         p5rAudio.playMenuNavigate();
-        if (tabConfig) {
-          this.showEyeCutin(tabConfig);
-        }
+        if (tabConfig) this.showEyeCutin(tabConfig);
       });
 
-      // Mouseleave: Hide eye cut-in banner with smooth delay
-      btn.addEventListener('mouseleave', () => {
-        this.scheduleHideCutin(300);
-      });
+      btn.addEventListener('mouseleave', () => this.scheduleHideCutin(300));
 
-      // Click microinteraction: Transition tab with synchronized knife slash wipe
       btn.addEventListener('click', (e) => {
         e.preventDefault();
         const targetTab = btn.getAttribute('data-tab');
         if (!targetTab) return;
-
-        // Idempotent guard: Ignore clicks on currently active tab or mid-transition
-        if (this.activeTabId === targetTab || this.isTransitioning) {
-          return;
-        }
-
-        this.setActiveTab(targetTab);
+        if (this.activeTabId === targetTab || this.isTransitioning) return;
+        void this.setActiveTab(targetTab);
       });
     });
   }
 
-  /**
-   * Displays the dynamic Joker eye-flare cut-in banner
-   */
+  /** Displays the dynamic Joker eye-flare cut-in banner */
   private showEyeCutin(tab: TabConfig): void {
     if (this.cutinHideTimeout) {
       clearTimeout(this.cutinHideTimeout);
       this.cutinHideTimeout = null;
     }
-
     if (!this.cutinContainer) return;
     const tagEl = document.getElementById('cutin-tag-text');
     const captionEl = document.getElementById('cutin-caption-text');
-
     if (tagEl) tagEl.textContent = `COMMAND ${tab.code} // ${tab.label}`;
     if (captionEl) captionEl.textContent = tab.caption;
-
     this.cutinContainer.classList.add('cutin-active');
   }
 
-  /**
-   * Schedules smooth fade-out of eye-flare cut-in banner
-   */
+  /** Schedules the cut-in banner's kinetic retraction */
   private scheduleHideCutin(delayMs: number = 750): void {
-    if (this.cutinHideTimeout) {
-      clearTimeout(this.cutinHideTimeout);
-    }
+    if (this.cutinHideTimeout) clearTimeout(this.cutinHideTimeout);
     this.cutinHideTimeout = setTimeout(() => {
-      if (this.cutinContainer) {
-        this.cutinContainer.classList.remove('cutin-active');
-      }
+      this.cutinContainer?.classList.remove('cutin-active');
     }, delayMs);
   }
 
   /**
-   * Binds full keyboard shortcuts (1-5, Arrow keys with wrapping, Home/End, Enter/Space)
-   */
-  /**
-   * Binds full keyboard navigation (1-5, Arrow keys, WASD, ESC/Backspace for Back)
+   * Keyboard + controller navigation. Ribbon steps snap one position at a time
+   * with a throttled navigate cue; ESC/Backspace runs the dismissal hierarchy.
    */
   private bindKeyboardShortcuts(): void {
     this.keydownListener = (e: KeyboardEvent) => {
-      // 0. Ignore navigation keys if user is actively typing in a form input
       const activeTag = document.activeElement?.tagName?.toLowerCase();
       if (activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select') {
         if (e.key === 'Escape') {
@@ -418,85 +309,74 @@ export class P5RNavigationController implements NavigationController {
         return;
       }
 
-      // 1. ESC or Backspace -> Trigger Persona 5 Back Navigation & SFX
       if (e.key === 'Escape' || e.key === 'Backspace') {
         e.preventDefault();
         this.goBack();
         return;
       }
 
-      // 2. Direct number keys 1-5
       const tabNum = parseInt(e.key, 10);
       if (tabNum >= 1 && tabNum <= this.tabButtons.length) {
         e.preventDefault();
         const targetBtn = this.tabButtons[tabNum - 1];
-        if (targetBtn) {
-          targetBtn.click();
-        }
+        if (targetBtn) this.triggerButton(targetBtn);
         return;
       }
 
       const key = e.key.toLowerCase();
+      const isNext = e.key === 'ArrowRight' || e.key === 'ArrowDown' || key === 'd' || key === 's';
+      const isPrev = e.key === 'ArrowLeft' || e.key === 'ArrowUp' || key === 'a' || key === 'w';
 
-      // 11. Arrow keys & WASD navigation across command ribbons
-      const isArrowNext = e.key === 'ArrowRight' || e.key === 'ArrowDown' || key === 'd';
-      const isArrowPrev = e.key === 'ArrowLeft' || e.key === 'ArrowUp' || key === 'a' || key === 'w';
-      const isHome = e.key === 'Home';
-      const isEnd = e.key === 'End';
+      if (!isNext && !isPrev && e.key !== 'Home' && e.key !== 'End') return;
+      if (this.isTransitioning) return;
 
-      if (isArrowNext || isArrowPrev || isHome || isEnd) {
-        const currentIdx = this.tabButtons.findIndex(
-          (b) => b.getAttribute('data-tab') === this.activeTabId
-        );
-        if (currentIdx === -1) return;
+      const currentIdx = this.tabButtons.findIndex((b) => b.getAttribute('data-tab') === this.activeTabId);
+      if (currentIdx === -1) return;
 
-        let nextIdx = currentIdx;
-        if (isArrowNext) {
-          nextIdx = (currentIdx + 1) % this.tabButtons.length;
-        } else if (isArrowPrev) {
-          nextIdx = (currentIdx - 1 + this.tabButtons.length) % this.tabButtons.length;
-        } else if (isHome) {
-          nextIdx = 0;
-        } else if (isEnd) {
-          nextIdx = this.tabButtons.length - 1;
-        }
+      let nextIdx = currentIdx;
+      if (isNext) nextIdx = (currentIdx + 1) % this.tabButtons.length;
+      else if (isPrev) nextIdx = (currentIdx - 1 + this.tabButtons.length) % this.tabButtons.length;
+      else if (e.key === 'Home') nextIdx = 0;
+      else if (e.key === 'End') nextIdx = this.tabButtons.length - 1;
 
-        e.preventDefault();
-        const targetBtn = this.tabButtons[nextIdx];
-        if (targetBtn) {
-          targetBtn.focus();
-          targetBtn.click();
-        }
-      }
+      e.preventDefault();
+      const targetBtn = this.tabButtons[nextIdx];
+      if (!targetBtn) return;
+
+      // A keyboard step always moves focus, and the ribbon snaps one step even
+      // when the target is already the active tab.
+      targetBtn.focus({ preventScroll: true });
+      p5rTransitions.snap(targetBtn, isNext ? 1 : -1);
+      p5rAudio.playMenuNavigate();
+      if (nextIdx !== currentIdx) this.triggerButton(targetBtn);
     };
 
     window.addEventListener('keydown', this.keydownListener);
   }
 
-  /**
-   * Binds desktop mouse parallax to the full Joker silhouette
-   */
+  private triggerButton(btn: HTMLElement): void {
+    const tabId = btn.getAttribute('data-tab');
+    if (!tabId || tabId === this.activeTabId) return;
+    void this.setActiveTab(tabId);
+  }
+
+  /** Binds desktop mouse parallax to the full Joker silhouette */
   private bindJokerParallax(): void {
     this.mouseMoveListener = (e: MouseEvent) => {
       if (window.innerWidth < 1024 || !this.jokerElement) return;
+      if (prefersReducedMotion()) return;
 
-      if (this.rafId) {
-        cancelAnimationFrame(this.rafId);
-      }
+      if (this.rafId) cancelAnimationFrame(this.rafId);
 
       this.rafId = requestAnimationFrame(() => {
+        if (!this.jokerElement) return;
         const tabConfig = P5R_TABS.find((t) => t.id === this.activeTabId);
-        const baseTransform = tabConfig ? tabConfig.jokerStance.transform : 'translateY(0px) scale(1)';
-
+        const base = tabConfig ? tabConfig.jokerStance.transform : 'translateY(0px) scale(1)';
         const normX = (e.clientX / window.innerWidth - 0.5) * 2;
         const normY = (e.clientY / window.innerHeight - 0.5) * 2;
-
-        const offsetX = normX * 12;
-        const offsetY = normY * 8;
-
-        if (this.jokerElement) {
-          this.jokerElement.style.transform = `${baseTransform} translate3d(${offsetX}px, ${offsetY}px, 0)`;
-        }
+        // Parallax is skipped while the stance pulse owns the transform.
+        if (this.jokerElement.getAnimations().length > 0) return;
+        this.jokerElement.style.transform = `${base} translate3d(${normX * 12}px, ${normY * 8}px, 0)`;
       });
     };
 
@@ -504,65 +384,54 @@ export class P5RNavigationController implements NavigationController {
   }
 
   /**
-   * Updates Joker silhouette stance and triggers kinetic pulse
+   * Joker stance. Driven by element.animate() so the committed rotation and
+   * offset survive: a CSS keyframe here would reset the transform.
    */
   private updateJokerStance(tabId: string, pulse: boolean = true): void {
-    if (!this.jokerElement) {
-      this.jokerElement = document.getElementById('joker-silhouette');
-    }
+    if (!this.jokerElement) this.jokerElement = document.getElementById('joker-silhouette');
     if (!this.jokerElement) return;
 
     const tabConfig = P5R_TABS.find((t) => t.id === tabId);
-    if (tabConfig) {
-      this.jokerElement.style.transform = tabConfig.jokerStance.transform;
-      this.jokerElement.style.filter = tabConfig.jokerStance.shadow;
-    }
+    if (!tabConfig) return;
 
-    if (pulse && typeof this.jokerElement.animate === 'function' && tabConfig) {
-      this.jokerElement.animate([
-        {
-          transform: `${tabConfig.jokerStance.transform} scale(1.03)`,
-          filter: `${tabConfig.jokerStance.shadow} brightness(1.3)`
-        },
-        {
-          transform: tabConfig.jokerStance.transform,
-          filter: tabConfig.jokerStance.shadow
-        }
-      ], {
-        duration: 320,
-        easing: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)'
-      });
-    }
+    this.jokerElement.style.transform = tabConfig.jokerStance.transform;
+    this.jokerElement.style.filter = tabConfig.jokerStance.shadow;
+
+    if (!pulse || prefersReducedMotion() || typeof this.jokerElement.animate !== 'function') return;
+
+    this.jokerElement
+      .animate(
+        [
+          {
+            transform: `${tabConfig.jokerStance.transform} scale(1.03)`,
+            filter: `${tabConfig.jokerStance.shadow} brightness(1.3)`
+          },
+          { transform: tabConfig.jokerStance.transform, filter: tabConfig.jokerStance.shadow }
+        ],
+        { duration: 320, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'none' }
+      )
+      .finished.catch(() => undefined);
   }
 
-  /**
-   * Binds mobile navigation drawer toggle button if present
-   */
+  /** Binds mobile navigation drawer toggle button if present */
   private bindMobileDrawer(): void {
-    if (!this.mobileNavToggle) return;
-
+    if (!this.mobileNavToggle || this.bound.has(this.mobileNavToggle)) return;
+    this.bound.add(this.mobileNavToggle);
     this.mobileNavToggle.addEventListener('click', () => {
       this.isMobileDrawerOpen = !this.isMobileDrawerOpen;
-      if (this.navWheelContainer) {
-        this.navWheelContainer.classList.toggle('drawer-open', this.isMobileDrawerOpen);
-      }
+      this.navWheelContainer?.classList.toggle('drawer-open', this.isMobileDrawerOpen);
       p5rAudio.playGunCock();
     });
   }
 
-  /**
-   * Applies complete WAI-ARIA tab semantics
-   */
+  /** Applies complete WAI-ARIA tab semantics */
   private applyAriaAttributes(): void {
-    if (this.navWheelContainer) {
-      this.navWheelContainer.setAttribute('role', 'tablist');
-      this.navWheelContainer.setAttribute('aria-label', 'Phantom Thieves Command Menu');
-    }
+    this.navWheelContainer?.setAttribute('role', 'tablist');
+    this.navWheelContainer?.setAttribute('aria-label', 'Phantom Thieves Command Menu');
 
     this.tabButtons.forEach((btn) => {
       const tabId = btn.getAttribute('data-tab') || '';
       const isActive = tabId === this.activeTabId;
-
       btn.setAttribute('role', 'tab');
       btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
       btn.setAttribute('aria-controls', tabId);
@@ -576,14 +445,13 @@ export class P5RNavigationController implements NavigationController {
     });
   }
 
-  /**
-   * Switches active navigation tab within sub-600ms budget
-   */
-  public async setActiveTab(tabId: string, options?: { playAudio?: boolean }): Promise<void> {
-    // Idempotent check
+  /** Switches active navigation ribbon through the Motion Director */
+  public async setActiveTab(
+    tabId: string,
+    options: { playAudio?: boolean; variant?: P5RTransitionType } = {}
+  ): Promise<void> {
     if (this.activeTabId === tabId) return;
 
-    // If an animation is in flight, cleanly preempt it
     if (this.isTransitioning) {
       p5rTransitions.cancelActiveTransitions();
       this.isTransitioning = false;
@@ -593,34 +461,27 @@ export class P5RNavigationController implements NavigationController {
     document.body.classList.add('transitioning-lock');
 
     try {
-      // 1. Update active tab buttons and ARIA attributes
       this.tabButtons.forEach((btn) => {
         const matches = btn.getAttribute('data-tab') === tabId;
         btn.classList.toggle('active', matches);
         btn.setAttribute('aria-selected', matches ? 'true' : 'false');
         btn.setAttribute('tabindex', matches ? '0' : '-1');
-        if (!matches) {
-          btn.blur();
-        }
+        if (!matches) btn.blur();
       });
 
-      // 2. Update dynamic Joker stance and trigger kinetic pulse concurrently
       this.updateJokerStance(tabId, true);
 
-      // 3. Update cut-in banner
       const tabConfig = P5R_TABS.find((t) => t.id === tabId);
       if (tabConfig) {
         this.showEyeCutin(tabConfig);
         this.scheduleHideCutin();
       }
 
-      // 4. Update active tab panes with comic slash wipe transition (<600ms)
       const currentPane = document.querySelector<HTMLElement>('.tab-pane.active');
       const nextPane = document.getElementById(tabId);
       if (nextPane) {
-        await p5rTransitions.switchTab(currentPane, nextPane, 'comic-slash', {
-          durationMs: 380,
-          playAudio: options?.playAudio ?? true // Synchronized knife slash SFX on transition
+        await p5rTransitions.switchTab(currentPane, nextPane, options.variant ?? 'slash-cut', {
+          playAudio: options.playAudio ?? true
         });
       } else {
         this.tabPanes.forEach((pane) => {
@@ -631,14 +492,10 @@ export class P5RNavigationController implements NavigationController {
       }
 
       this.activeTabId = tabId;
-      if (this.tabHistory[this.tabHistory.length - 1] !== tabId) {
-        this.tabHistory.push(tabId);
-      }
+      this.syncBackButton();
+      if (this.tabHistory[this.tabHistory.length - 1] !== tabId) this.tabHistory.push(tabId);
 
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('p5r:tabchange', { detail: { tabId } }));
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
+      window.dispatchEvent(new CustomEvent('p5r:tabchange', { detail: { tabId } }));
     } finally {
       this.isTransitioning = false;
       document.body.classList.remove('transitioning-lock');
@@ -646,102 +503,55 @@ export class P5RNavigationController implements NavigationController {
   }
 
   /**
-   * Navigates to previous tab or closes active modal with authentic P5 cancel SFX
+   * Dismissal hierarchy: AOA -> advice -> field manual -> tab history -> DOSSIER.
+   * Each level closes through KINETIC-EXIT so the reverse wipe and menu_back
+   * always line up, and the tab return reuses the same variant.
    */
   public goBack(): void {
-    // 1. If AOA modal is active, close it first (closeBtn triggers aoa_finish)
     const aoa = document.getElementById('all-out-attack-overlay');
-    if (aoa && aoa.classList.contains('active')) {
+    if (aoa?.classList.contains('active')) {
       const closeBtn = document.getElementById('aoa-close-btn');
       if (closeBtn) {
         closeBtn.click();
       } else {
-        aoa.classList.remove('active');
-        p5rAudio.playMenuBack();
+        void p5rTransitions.kineticExit({
+          host: aoa,
+          audio: 'aoa_finish',
+          onCovered: () => aoa.classList.remove('active')
+        });
       }
       return;
     }
 
-    // 2. If Strategic Advice modal is open, close it
     if (adviceModalController.isOpen()) {
       adviceModalController.close();
       return;
     }
 
-    // 3. If Field manual modal is open, close it
     if (helpModalController.isOpen()) {
       helpModalController.close();
       return;
     }
 
-    // Tab history navigation: play menu_back once and transition without knife_slash collision
-    p5rAudio.playMenuBack();
     if (this.tabHistory.length > 1) {
-      this.tabHistory.pop(); // Pop current tab
-      const prevTab = this.tabHistory.pop() || 'tab-profile';
-      this.setActiveTab(prevTab, { playAudio: false });
+      this.tabHistory.pop();
+      const prev = this.tabHistory[this.tabHistory.length - 1] || 'tab-profile';
+      void this.returnTo(prev);
     } else if (this.activeTabId !== 'tab-profile') {
-      this.setActiveTab('tab-profile', { playAudio: false });
+      void this.returnTo('tab-profile');
     }
   }
 
-  /**
-   * Injects the authentic Persona 5 Controller Navigation Helper Bar
-   */
-  private ensureControllerHelper(): void {
-    let helper = document.getElementById('p5-controller-hud');
-    if (!helper) {
-      helper = document.createElement('div');
-      helper.id = 'p5-controller-hud';
-      helper.className = 'p5-controller-hud';
-      helper.innerHTML = `
-        <div class="p5-hud-chip" id="hud-nav-chip"><span class="p5-chip-key">◄ ► / ▲ ▼</span><span class="p5-chip-txt">SELECT</span></div>
-        <div class="p5-hud-chip"><span class="p5-chip-key">1 - 3</span><span class="p5-chip-txt">DIRECT</span></div>
-      `;
-      document.body.appendChild(helper);
-
-      helper.querySelectorAll<HTMLElement>('.p5-hud-chip').forEach((chip) => {
-        chip.addEventListener('mouseenter', () => {
-          p5rAudio.playMenuNavigate();
-        });
-      });
-    }
-    this.controllerHelper = helper;
+  private async returnTo(tabId: string): Promise<void> {
+    p5rAudio.playMenuBack();
+    await this.setActiveTab(tabId, { playAudio: false, variant: 'slash-cut' });
   }
 
-  /**
-   * Binds URL hash changes to tabs and modals
-   */
-  private bindUrlHashRouting(): void {
-    const handleHash = () => {
-      const rawHash = (window.location.hash || '').toLowerCase().replace(/^#\/*/, '').replace(/\/+$/, '').trim();
-      const rawPath = (window.location.pathname || '').toLowerCase().replace(/^\/+/, '').replace(/\/+$/, '').trim();
-      const route = rawHash || rawPath;
-      if (!route) return;
-
-      if (route === 'advice' || route === 'sarannya' || route === 'saran' || route === 'tips') {
-        adviceModalController.open();
-      } else if (route === 'help' || route === 'manual') {
-        helpModalController.open();
-      } else if (route === 'profile' || route === 'dossier' || route === 'tab-profile') {
-        this.setActiveTab('tab-profile');
-      } else if (route === 'skills' || route === 'tab-skills') {
-        this.setActiveTab('tab-skills');
-      } else if (route === 'confidants' || route === 'tab-experience') {
-        this.setActiveTab('tab-experience');
-      }
-    };
-
-    window.addEventListener('hashchange', handleHash);
-    window.addEventListener('popstate', handleHash);
-    setTimeout(handleHash, 400);
+  private syncBackButton(): void {
+    this.backButton?.classList.toggle('active-subpage', this.activeTabId !== 'tab-profile');
   }
 
-  public getActiveTabId(): string {
-    return this.activeTabId;
-  }
-
-  public destroy(): void {
+  private unbindListeners(): void {
     if (this.keydownListener) {
       window.removeEventListener('keydown', this.keydownListener);
       this.keydownListener = null;
@@ -750,6 +560,55 @@ export class P5RNavigationController implements NavigationController {
       window.removeEventListener('mousemove', this.mouseMoveListener);
       this.mouseMoveListener = null;
     }
+    if (this.hashListener) {
+      window.removeEventListener('hashchange', this.hashListener);
+      window.removeEventListener('popstate', this.hashListener);
+      this.hashListener = null;
+    }
+  }
+
+  /** Binds URL hash changes to tabs and modals (once per page) */
+  private bindUrlHashRouting(): void {
+    if (this.hashListener) return;
+    const handleHash = (): void => {
+      const rawHash = (window.location.hash || '')
+        .toLowerCase()
+        .replace(/^#\/*/, '')
+        .replace(/\/+$/, '')
+        .trim();
+      const rawPath = (window.location.pathname || '')
+        .toLowerCase()
+        .replace(/^\/+/, '')
+        .replace(/\/+$/, '')
+        .trim();
+      const route = rawHash || rawPath;
+      if (!route) return;
+
+      if (route === 'advice' || route === 'sarannya' || route === 'saran' || route === 'tips') {
+        adviceModalController.open();
+      } else if (route === 'help' || route === 'manual') {
+        helpModalController.open();
+      } else if (route === 'profile' || route === 'dossier' || route === 'tab-profile') {
+        void this.setActiveTab('tab-profile');
+      } else if (route === 'skills' || route === 'tab-skills') {
+        void this.setActiveTab('tab-skills');
+      } else if (route === 'confidants' || route === 'tab-experience') {
+        void this.setActiveTab('tab-experience');
+      }
+    };
+
+    this.hashListener = handleHash;
+    window.addEventListener('hashchange', handleHash);
+    window.addEventListener('popstate', handleHash);
+    window.setTimeout(handleHash, MOTION.slashCut);
+  }
+
+  public getActiveTabId(): string {
+    return this.activeTabId;
+  }
+
+  public destroy(): void {
+    this.unbindListeners();
     if (this.rafId) {
       cancelAnimationFrame(this.rafId);
       this.rafId = null;
@@ -758,19 +617,16 @@ export class P5RNavigationController implements NavigationController {
       clearTimeout(this.cutinHideTimeout);
       this.cutinHideTimeout = null;
     }
-    const injectedStyle = document.getElementById('p5r-nav-wheel-styles');
-    if (injectedStyle && injectedStyle.parentNode) {
-      injectedStyle.parentNode.removeChild(injectedStyle);
-    }
-    if (this.cutinContainer && this.cutinContainer.parentNode) {
-      this.cutinContainer.parentNode.removeChild(this.cutinContainer);
-      this.cutinContainer = null;
-    }
-    if (this.controllerHelper && this.controllerHelper.parentNode) {
-      this.controllerHelper.parentNode.removeChild(this.controllerHelper);
-      this.controllerHelper = null;
-    }
+    this.cutinContainer?.remove();
+    this.cutinContainer = null;
+    this.controllerHelper?.remove();
+    this.controllerHelper = null;
+    this.backButton?.remove();
+    this.backButton = null;
+    this.tabButtons.forEach((btn) => btn.querySelector('.p5-tab-slash')?.remove());
+    this.isInitialized = false;
   }
 }
 
 export const navigationController = new P5RNavigationController();
+export { P5RNavigationController as P3RNavigationController };

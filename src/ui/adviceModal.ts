@@ -11,6 +11,7 @@
  */
 
 import { p5rAudio } from '../audio/p5rAudio';
+import { p5rTransitions } from '../transitions/transitions';
 
 export interface AdviceItem {
   id: string;
@@ -262,26 +263,30 @@ class AdviceModalControllerImpl implements AdviceModalController {
 
   public open(): void {
     if (!this.overlayEl) this.createDom();
-    if (!this.overlayEl) return;
-
-    this.overlayEl.classList.remove('hidden');
-    void this.overlayEl.offsetWidth;
-    this.overlayEl.classList.add('visible');
+    if (!this.overlayEl || this.isModalOpen) return;
     this.isModalOpen = true;
-    p5rAudio.playMenuOpen();
+    void p5rTransitions.shutterBlackout({
+      host: this.overlayEl,
+      audio: 'menu_open',
+      staggerSelector: '.manual-grid > *, .manual-footer',
+      onCovered: () => {
+        if (!this.overlayEl) return;
+        this.overlayEl.classList.remove('hidden');
+        void this.overlayEl.offsetWidth;
+        this.overlayEl.classList.add('visible');
+      }
+    });
   }
 
   public close(): void {
     if (!this.overlayEl || !this.isModalOpen) return;
-
-    this.overlayEl.classList.remove('visible');
-    p5rAudio.playMenuBack();
-    setTimeout(() => {
-      if (this.overlayEl && !this.isModalOpen) {
-        this.overlayEl.classList.add('hidden');
-      }
-    }, 220);
     this.isModalOpen = false;
+    void p5rTransitions.kineticExit({
+      host: this.overlayEl,
+      audio: 'menu_back',
+      onCovered: () => this.overlayEl?.classList.add('hidden')
+    });
+    this.overlayEl.classList.remove('visible');
   }
 
   public isOpen(): boolean {

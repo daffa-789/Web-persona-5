@@ -40,6 +40,9 @@ const RANDOM_TIPS: string[] = [
 class MonaNavigatorImpl implements MonaNavigator {
   private containerEl: HTMLElement | null = null;
   private bubbleTextEl: HTMLElement | null = null;
+  private bubbleWrapEl: HTMLElement | null = null;
+  private avatarEl: HTMLElement | null = null;
+  private breath: Animation | null = null;
   private isMinimized: boolean = false;
   private currentTipIndex: number = 0;
   private autoHideTimer: number | null = null;
@@ -50,12 +53,40 @@ class MonaNavigatorImpl implements MonaNavigator {
 
     this.createDom();
     this.bindEvents();
+    this.startIdleBreath();
 
-    // Initial greeting after entrance
+    // Initial greeting after the entrance cinematic has released the viewport
     this.initialGreetingTimer = window.setTimeout(() => {
       this.say(TAB_MESSAGES['tab-profile']);
       this.initialGreetingTimer = null;
     }, 2800);
+  }
+
+  /**
+   * Morgana idles on the Web Animations API rather than a CSS animation: the
+   * badge keeps its hover rotation, and an infinite CSS keyframe on transform
+   * would win the cascade and freeze hover feedback out.
+   */
+  private startIdleBreath(): void {
+    const thumb = this.avatarEl?.querySelector<HTMLElement>('.mona-avatar-icon');
+    if (!thumb || typeof thumb.animate !== 'function') return;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+
+    this.breath = thumb.animate(
+      [
+        { transform: 'scale(1) translateY(0)' },
+        { transform: 'scale(1.035) translateY(-1.5px)' },
+        { transform: 'scale(1) translateY(0)' }
+      ],
+      { duration: 3000, iterations: Infinity, easing: 'cubic-bezier(.4,0,.6,1)' }
+    );
+    this.breath.finished.catch(() => undefined);
+
+    document.addEventListener('visibilitychange', () => {
+      if (!this.breath) return;
+      if (document.hidden) this.breath.pause();
+      else this.breath.play();
+    });
   }
 
   private createDom(): void {
@@ -93,6 +124,8 @@ class MonaNavigatorImpl implements MonaNavigator {
     document.body.appendChild(wrapper);
     this.containerEl = wrapper;
     this.bubbleTextEl = document.getElementById('mona-speech-text');
+    this.bubbleWrapEl = document.getElementById('mona-bubble-wrap');
+    this.avatarEl = document.getElementById('mona-avatar-btn');
   }
 
   private bindEvents(): void {
@@ -148,18 +181,33 @@ class MonaNavigatorImpl implements MonaNavigator {
       this.autoHideTimer = null;
     }
 
-    // Comic typing animation
+    // Comic tail snap: the bubble is thrown onto the screen from the avatar's
+    // corner, it never fades. WAAPI so the skewed resting transform survives.
     this.bubbleTextEl.textContent = message;
-    this.containerEl.classList.remove('mona-speaking');
-    void this.containerEl.offsetWidth; // Force reflow
     this.containerEl.classList.add('mona-speaking');
+    this.snapIn(this.bubbleWrapEl);
+
+    if (this.autoHideTimer !== null) window.clearTimeout(this.autoHideTimer);
 
     // Auto-settle after 7 seconds
     this.autoHideTimer = window.setTimeout(() => {
-      if (this.containerEl) {
-        this.containerEl.classList.remove('mona-speaking');
-      }
+      this.containerEl?.classList.remove('mona-speaking');
     }, 7000);
+  }
+
+  private snapIn(target: HTMLElement | null): void {
+    if (!target || typeof target.animate !== 'function') return;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    target
+      .animate(
+        [
+          { opacity: 0, transform: 'skewX(-6deg) translate(-22px, 16px) scale(.86)' },
+          { opacity: 1, transform: 'skewX(-6deg) translate(3px, -2px) scale(1.03)', offset: 0.6 },
+          { opacity: 1, transform: 'skewX(-6deg) translate(0, 0) scale(1)' }
+        ],
+        { duration: 190, easing: 'steps(3, end)', fill: 'none' }
+      )
+      .finished.catch(() => undefined);
   }
 
   public onTabChange(tabId: string): void {
@@ -195,17 +243,24 @@ class MonaNavigatorImpl implements MonaNavigator {
 
   private setMinimized(minimized: boolean): void {
     this.isMinimized = minimized;
-    if (this.containerEl) {
-      this.containerEl.classList.toggle('minimized', minimized);
-    }
+    this.containerEl?.classList.toggle('minimized', minimized);
+    if (!minimized) this.snapIn(this.bubbleWrapEl);
   }
 
   public destroy(): void {
     if (this.autoHideTimer !== null) {
       window.clearTimeout(this.autoHideTimer);
     }
+    try {
+      this.breath?.cancel();
+    } catch {
+      /* already detached */
+    }
+    this.breath = null;
     this.containerEl?.remove();
     this.containerEl = null;
+    this.bubbleWrapEl = null;
+    this.avatarEl = null;
   }
 }
 

@@ -80,10 +80,14 @@ export function p5RankUpCelebration(originX = 0.5, originY = 0.6): void {
 /**
  * Epic All-Out Attack Finishing Touch victory cannon
  */
+let victoryFrame = 0;
+
 export function p5VictoryShower(): void {
+  if (typeof window === 'undefined') return;
   try {
     const end = Date.now() + 800;
     const frame = () => {
+      victoryFrame = 0;
       confetti({
         particleCount: 4,
         angle: 60,
@@ -92,6 +96,7 @@ export function p5VictoryShower(): void {
         colors: P5_COLORS,
         shapes: ['star', 'square'],
         scalar: 1.2,
+        disableForReducedMotion: true,
       });
       confetti({
         particleCount: 4,
@@ -101,14 +106,31 @@ export function p5VictoryShower(): void {
         colors: P5_COLORS,
         shapes: ['star', 'square'],
         scalar: 1.2,
+        disableForReducedMotion: true,
       });
 
       if (Date.now() < end) {
-        requestAnimationFrame(frame);
+        victoryFrame = requestAnimationFrame(frame);
       }
     };
     frame();
   } catch (e) {
     console.debug('[P5R Confetti] Fallback handled:', e);
+  }
+}
+
+/**
+ * Halt every burst in flight: kinetic exits and reduced-motion cues must be
+ * able to clear the particle layer before the next frame is choreographed.
+ */
+export function p5HaltConfetti(): void {
+  if (victoryFrame) {
+    cancelAnimationFrame(victoryFrame);
+    victoryFrame = 0;
+  }
+  try {
+    confetti.reset();
+  } catch (e) {
+    console.debug('[P5R Confetti] Reset skipped:', e);
   }
 }
