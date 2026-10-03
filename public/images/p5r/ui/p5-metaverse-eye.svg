@@ -1,10 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Metaverse Navigator">
-  <g transform="rotate(-4 32 32)">
-    <path d="M2 32C11 15 21 8 32 8s21 7 30 24C53 49 43 56 32 56S11 49 2 32z" fill="#000"/>
-    <path d="M6 32C14 18 23 12 32 12s18 6 26 20c-8 14-17 20-26 20S14 46 6 32z" fill="#F4F4F0"/>
-    <path d="M6 32c8-14 17-20 26-20s18 6 26 20" fill="none" stroke="#E60012" stroke-width="4"/>
-    <circle cx="32" cy="32" r="12.5" fill="#E60012" stroke="#000" stroke-width="2.5"/>
-    <path d="M32 20.5l3.2 8.1 8.8.4-6.9 5.6 2.2 8.6L32 38l-7.3 5.2 2.2-8.6-6.9-5.6 8.8-.4z" fill="#000"/>
-    <path d="M10 24 22 9l4 7z" fill="#E60012" opacity=".8"/>
-  </g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" aria-label="Metaverse Navigator" role="img" viewBox="0 0 64 64"><g transform="rotate(-4 32 32)"><path fill="#000" d="M2 32C11 15 21 8 32 8s21 7 30 24C53 49 43 56 32 56S11 49 2 32z"/><path fill="#F4F4F0" d="M6 32C14 18 23 12 32 12s18 6 26 20c-8 14-17 20-26 20S14 46 6 32z"/><path fill="none" stroke="#E60012" stroke-width="4" d="M6 32c8-14 17-20 26-20s18 6 26 20"/><circle cx="32" cy="32" r="12.5" fill="#E60012" stroke="#000" stroke-width="2.5"/><path fill="#000" d="M32 20.5l3.2 8.1 8.8.4-6.9 5.6 2.2 8.6L32 38l-7.3 5.2 2.2-8.6-6.9-5.6 8.8-.4z"/><path fill="#E60012" d="M10 24 22 9l4 7z" opacity=".8"/></g></svg>
